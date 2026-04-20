@@ -6,6 +6,7 @@ import { STORE_CONFIG } from '../config';
 import { CODForm } from '../components/CODForm';
 import { CouponInput, type AppliedCoupon } from '../components/CouponInput';
 import { RecentlyViewed } from '../components/RecentlyViewed';
+import { CompleteYourLook } from '../components/Recommendations';
 
 export default function Cart() {
   const [, setLocation] = useLocation();
@@ -239,6 +240,13 @@ export default function Cart() {
           </div>
         </div>
       </main>
+
+      {/* Complete Your Look — cross-category picks */}
+      {items.length > 0 && (
+        <div className="max-w-2xl mx-auto w-full px-4">
+          <CompleteYourLook cartItems={items} />
+        </div>
+      )}
 
       {/* Continue Shopping — recently viewed suggestions */}
       <div className="max-w-2xl mx-auto w-full px-4 pb-6">

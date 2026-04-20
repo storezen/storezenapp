@@ -10,7 +10,7 @@ import { useSeo } from '../hooks/useSeo';
 import { useToast } from '../hooks/use-toast';
 import { StockIndicator, getVariantStock, isProductSoldOut } from '../components/StockBadge';
 import { ReviewsSection } from '../components/ReviewsSection';
-import { RelatedProducts } from '../components/RelatedProducts';
+import { YouMightAlsoLike } from '../components/Recommendations';
 import { RecentlyViewed } from '../components/RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/use-recently-viewed';
 import { CODForm } from '../components/CODForm';
@@ -392,7 +392,7 @@ export default function ProductDetail() {
       {/* Reviews + Related + Recently Viewed — full width */}
       <div className="max-w-6xl mx-auto w-full px-4 pb-8">
         <ReviewsSection productId={product.id} productName={product.name} />
-        <RelatedProducts currentProductId={product.id} category={product.category} />
+        <YouMightAlsoLike currentProductId={product.id} category={product.category} />
         <RecentlyViewed
           title="You Recently Viewed"
           excludeId={product.id}

@@ -13,6 +13,7 @@ import {
 } from '../lib/orders';
 import { STORE_CONFIG } from '../config';
 import { useSeo } from '../hooks/useSeo';
+import { CustomersAlsoBought } from '../components/Recommendations';
 
 /* ── Status Tracker ──────────────────────────────────────────────────────── */
 function StatusTracker({ status }: { status: OrderStatus }) {
@@ -373,6 +374,11 @@ export default function OrderConfirmation() {
             Continue Shopping
           </button>
         </motion.div>
+
+        {/* ── Customers Also Bought ── */}
+        <CustomersAlsoBought
+          orderedProductIds={order.items.map(i => i.productId)}
+        />
       </div>
     </div>
   );
