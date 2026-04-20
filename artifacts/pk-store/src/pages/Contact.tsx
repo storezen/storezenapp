@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '../components/Navbar';
 import { STORE_CONFIG } from '../config';
+import { useSeo } from '../hooks/useSeo';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -21,6 +22,8 @@ const contactSchema = z.object({
 type ContactForm = z.infer<typeof contactSchema>;
 
 export default function Contact() {
+  useSeo({ title: `Contact Us — SmartWear`, description: `Get in touch with SmartWear. Order via WhatsApp, send us a message, or visit us. Cash on Delivery across Pakistan.` });
+
   const [submitted, setSubmitted] = useState(false);
 
   const form = useForm<ContactForm>({

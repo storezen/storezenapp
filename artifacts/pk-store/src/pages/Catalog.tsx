@@ -5,12 +5,15 @@ import { products } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { Navbar } from '../components/Navbar';
 import { CountdownTimer } from '../components/CountdownTimer';
+import { useSeo } from '../hooks/useSeo';
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 
 const categories = ['All', 'Clothing', 'Digital', 'Beauty'];
 
 export default function Catalog() {
+  useSeo({ title: `Shop All Products — SmartWear`, description: 'Browse our full collection of clothing, digital products, beauty & more. Cash on Delivery Pakistan.' });
+
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [sort, setSort] = useState<SortOption>('featured');

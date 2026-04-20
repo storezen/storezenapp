@@ -5,8 +5,9 @@ import { products } from '../data/products';
 import { STORE_CONFIG } from '../config';
 import { useCart } from '../hooks/use-cart';
 import { trackViewContent, trackAddToCart, trackContact } from '../lib/tiktok-pixel';
+import { useSeo } from '../hooks/useSeo';
 import { useToast } from '../hooks/use-toast';
-import { StockIndicator, getVariantStock } from '../components/StockBadge';
+import { StockIndicator, getVariantStock, isProductSoldOut } from '../components/StockBadge';
 import { ReviewsSection } from '../components/ReviewsSection';
 import { RelatedProducts } from '../components/RelatedProducts';
 import { CODForm } from '../components/CODForm';
@@ -58,6 +59,33 @@ export default function ProductDetail() {
       trackViewContent({ id: product.id, name: product.name, price: product.price, category: product.category });
     }
   }, [product]);
+
+  const productSoldOut = product ? isProductSoldOut(product.id) : false;
+
+  useSeo({
+    title: product ? `${product.name} — SmartWear` : `Product — SmartWear`,
+    description: product?.description?.slice(0, 160),
+    image: product?.images?.[0] ?? product?.image,
+    type: product ? 'product' : 'website',
+    price: product?.price,
+    structuredData: product ? {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description: product.description,
+      image: product.images ?? [product.image],
+      brand: { '@type': 'Brand', name: 'SmartWear' },
+      offers: {
+        '@type': 'Offer',
+        price: product.price,
+        priceCurrency: 'PKR',
+        availability: productSoldOut
+          ? 'https://schema.org/OutOfStock'
+          : 'https://schema.org/InStock',
+        seller: { '@type': 'Organization', name: 'SmartWear' },
+      },
+    } : undefined,
+  });
 
   if (!match || !product) {
     return (

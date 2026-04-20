@@ -48,5 +48,12 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
   - `storeName`, `whatsappNumber`, `tikTokPixelId`, `deliveryCharge`, `currency`
 - **Products data**: `artifacts/pk-store/src/data/products.ts`
 - **Product images**: `artifacts/pk-store/public/` (tshirt.png, ebook.png, perfume.png, hero.png)
-- **Key components**: `Navbar.tsx`, `ProductCard.tsx`, `CountdownTimer.tsx`, `WhatsAppButton.tsx`
-- **Pages**: Home, Catalog, Contact, ProductDetail, Cart
+- **Key components**: `Navbar.tsx`, `ProductCard.tsx`, `CountdownTimer.tsx`, `WhatsAppButton.tsx`, `SizeGuideModal.tsx`, `CODForm.tsx`, `InstallPrompt.tsx`, `SkeletonCard.tsx`
+- **Pages**: Home, Catalog, Contact, ProductDetail, Cart (all lazy-loaded via React.lazy + Suspense)
+- **Hooks**: `useSeo.ts` (dynamic meta/OG/Twitter/JSON-LD per page), `use-cart.ts`
+- **PWA**: `public/manifest.json`, `public/sw.js` (cache-first images, network-first app), `public/icon-192.svg`, `public/icon-512.svg`
+- **SEO**: `public/robots.txt`, `public/sitemap.xml`, JSON-LD Product schema on ProductDetail
+- **COD Checkout** (`CODForm.tsx`): 20-city dropdown, phone auto-format (03XX-XXXXXXX), localStorage returning-customer pre-fill, free delivery >Rs. 2000, order ID generation
+- **TikTok Pixel** (`lib/tiktok-pixel.ts`): PageView, ViewContent, AddToCart, InitiateCheckout, CompletePayment, Contact (WhatsApp), ClickButton; dev-mode pink console logs
+- **Size Guide Modal** (`SizeGuideModal.tsx`): S-3XL chart with chest/length/shoulder, bottom-sheet mobile, centered desktop
+- **Performance**: `prefers-reduced-motion` CSS rules, `animate-slide-up` animation

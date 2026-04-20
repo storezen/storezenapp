@@ -309,3 +309,24 @@
 .animate-size-guide-in {
   animation: size-guide-in 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
+
+/* PWA Install Prompt slide-up animation */
+@keyframes slide-up {
+  from { transform: translateY(120%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.animate-slide-up {
+  animation: slide-up 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

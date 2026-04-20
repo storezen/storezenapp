@@ -9,6 +9,7 @@ import { CountdownTimer } from '../components/CountdownTimer';
 import { StoreLogo } from '../components/StoreLogo';
 import { STORE_CONFIG } from '../config';
 import { trackClickButton } from '../lib/tiktok-pixel';
+import { useSeo } from '../hooks/useSeo';
 
 const categories = ["All", "Clothing", "Digital", "Beauty"];
 
@@ -39,6 +40,12 @@ const categoryCards = [
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [, setLocation] = useLocation();
+
+  useSeo({
+    title: `${STORE_CONFIG.storeName} — Trending Fashion & Lifestyle Products`,
+    description: STORE_CONFIG.description.slice(0, 160),
+    type: 'website',
+  });
 
   const filteredProducts = products.filter(p =>
     activeCategory === "All" || p.category === activeCategory

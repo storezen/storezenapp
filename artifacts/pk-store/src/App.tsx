@@ -1,17 +1,20 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
-
-import Home from "@/pages/Home";
-import ProductDetail from "@/pages/ProductDetail";
-import Cart from "@/pages/Cart";
-import Catalog from "@/pages/Catalog";
-import Contact from "@/pages/Contact";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { PageLoader } from "@/components/SkeletonCard";
 import { initPixel, trackPageView } from "@/lib/tiktok-pixel";
+
+/* ── Code-split page imports ────────────────────────────────────────────────── */
+const Home          = lazy(() => import("@/pages/Home"));
+const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
+const Cart          = lazy(() => import("@/pages/Cart"));
+const Catalog       = lazy(() => import("@/pages/Catalog"));
+const Contact       = lazy(() => import("@/pages/Contact"));
+const NotFound      = lazy(() => import("@/pages/not-found"));
 
 const queryClient = new QueryClient();
 
@@ -19,20 +22,23 @@ function RouteTracker() {
   const [location] = useLocation();
   useEffect(() => {
     trackPageView();
+    window.scrollTo(0, 0);
   }, [location]);
   return null;
 }
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/catalog" component={Catalog} />
-      <Route path="/contact" component={Contact} />
-      <Route path="/product/:id" component={ProductDetail} />
-      <Route path="/cart" component={Cart} />
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/"            component={Home} />
+        <Route path="/catalog"     component={Catalog} />
+        <Route path="/contact"     component={Contact} />
+        <Route path="/product/:id" component={ProductDetail} />
+        <Route path="/cart"        component={Cart} />
+        <Route                     component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
@@ -49,6 +55,7 @@ function App() {
           <Router />
         </WouterRouter>
         <WhatsAppButton />
+        <InstallPrompt />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
