@@ -7,4 +7,5 @@ export const STORE_CONFIG = {
   deliveryCharge: 200,
   currency: "PKR",
   copyright: "© 2026 SmartWear",
+  adminPassword: "smartwear2024",
 };

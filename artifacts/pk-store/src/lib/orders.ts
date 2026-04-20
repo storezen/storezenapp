@@ -4,7 +4,8 @@ export type OrderStatus =
   | 'confirmed'
   | 'shipped'
   | 'out_for_delivery'
-  | 'delivered';
+  | 'delivered'
+  | 'cancelled';
 
 export type OrderItem = {
   productId: string;
@@ -42,6 +43,7 @@ export const STATUS_STEPS: { key: OrderStatus; label: string; icon: string }[] =
   { key: 'shipped',          label: 'Shipped',            icon: '📦' },
   { key: 'out_for_delivery', label: 'Out for Delivery',  icon: '🚚' },
   { key: 'delivered',        label: 'Delivered',          icon: '🎉' },
+  { key: 'cancelled',        label: 'Cancelled',          icon: '❌' },
 ];
 
 /* ── LocalStorage helpers ────────────────────────────────────────────────── */
@@ -92,6 +94,17 @@ export function getLastOrderId(): string | null {
 
 export function getStatusIndex(status: OrderStatus): number {
   return STATUS_STEPS.findIndex(s => s.key === status);
+}
+
+export function updateOrderStatus(orderId: string, newStatus: OrderStatus): boolean {
+  try {
+    const all = getAllOrders();
+    const idx = all.findIndex(o => o.orderId === orderId);
+    if (idx < 0) return false;
+    all[idx] = { ...all[idx], status: newStatus };
+    localStorage.setItem('sw_orders', JSON.stringify(all));
+    return true;
+  } catch { return false; }
 }
 
 /* ── WhatsApp message templates (for store owner) ─────────────────────────── */

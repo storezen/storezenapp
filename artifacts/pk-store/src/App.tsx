@@ -20,6 +20,7 @@ const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
 const TrackOrder        = lazy(() => import("@/pages/TrackOrder"));
 const Wishlist          = lazy(() => import("@/pages/Wishlist"));
 const ReturnPolicy      = lazy(() => import("@/pages/ReturnPolicy"));
+const Admin             = lazy(() => import("@/pages/Admin"));
 const NotFound          = lazy(() => import("@/pages/not-found"));
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ function Router() {
         <Route path="/track-order"        component={TrackOrder} />
         <Route path="/wishlist"           component={Wishlist} />
         <Route path="/return-policy"      component={ReturnPolicy} />
+        <Route path="/admin"              component={Admin} />
         <Route                            component={NotFound} />
       </Switch>
     </Suspense>
