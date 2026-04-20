@@ -13,27 +13,23 @@ import { RelatedProducts } from '../components/RelatedProducts';
 import { CODForm } from '../components/CODForm';
 import { ProductImageGallery } from '../components/ProductImageGallery';
 import { SizeGuideModal } from '../components/SizeGuideModal';
+import { getProductRating } from '../data/reviews';
 
-function StarRatingDisplay({ rating, count }: { rating: number; count: number }) {
+function StarRatingDisplay({ avg, count }: { avg: number; count: number }) {
+  const rounded = Math.round(avg);
   return (
     <div className="flex items-center gap-2">
       <div className="flex gap-0.5">
         {[1, 2, 3, 4, 5].map(i => (
-          <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill={i <= rating ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" className={i <= rating ? 'text-yellow-400' : 'text-muted-foreground/30'}>
+          <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill={i <= rounded ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" className={i <= rounded ? 'text-amber-400' : 'text-muted-foreground/30'}>
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
         ))}
       </div>
-      <span className="text-sm text-muted-foreground font-medium">{rating}.0 ({count} reviews)</span>
+      <span className="text-sm text-muted-foreground font-medium">{avg.toFixed(1)} ({count} reviews)</span>
     </div>
   );
 }
-
-const PRODUCT_RATINGS: Record<string, { avg: number; count: number }> = {
-  'tshirt-1': { avg: 5, count: 47 },
-  'ebook-1': { avg: 4, count: 12 },
-  'perfume-1': { avg: 5, count: 31 },
-};
 
 export default function ProductDetail() {
   const [match, params] = useRoute('/product/:id');
@@ -108,7 +104,7 @@ export default function ProductDetail() {
   );
   const stock = variantStock.current;
   const soldOut = stock === 0;
-  const rating = PRODUCT_RATINGS[product.id];
+  const rating = getProductRating(product.id);
 
   const handleAddToCart = () => {
     const variant = {
@@ -183,7 +179,7 @@ export default function ProductDetail() {
           <div className="mb-1.5 text-primary font-bold text-xs tracking-widest uppercase">{product.category}</div>
           <h1 className="text-3xl md:text-4xl font-black leading-tight mb-3">{product.name}</h1>
 
-          {rating && <StarRatingDisplay rating={rating.avg} count={rating.count} />}
+          {rating && <StarRatingDisplay avg={rating.avg} count={rating.count} />}
 
           <div className="flex items-end gap-3 mt-4 mb-2">
             <span className="text-4xl font-black text-primary">Rs. {currentPrice}</span>
@@ -345,7 +341,7 @@ export default function ProductDetail() {
 
       {/* Reviews + Related — full width */}
       <div className="max-w-6xl mx-auto w-full px-4 pb-8">
-        <ReviewsSection productId={product.id} />
+        <ReviewsSection productId={product.id} productName={product.name} />
         <RelatedProducts currentProductId={product.id} category={product.category} />
       </div>
 

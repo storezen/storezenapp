@@ -2,6 +2,7 @@ import { Link } from 'wouter';
 import { Product } from '../data/products';
 import { motion } from 'framer-motion';
 import { StockBadge, getProductMinStock, isProductSoldOut } from './StockBadge';
+import { getProductRating } from '../data/reviews';
 
 interface ProductCardProps {
   product: Product;
@@ -11,7 +12,7 @@ function StarRatingSmall({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5 items-center">
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill={i <= rating ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" className={i <= rating ? 'text-yellow-400' : 'text-muted-foreground/20'}>
+        <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill={i <= rating ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" className={i <= rating ? 'text-amber-400' : 'text-muted-foreground/20'}>
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       ))}
@@ -19,18 +20,12 @@ function StarRatingSmall({ rating }: { rating: number }) {
   );
 }
 
-const PRODUCT_RATINGS: Record<string, { avg: number; count: number }> = {
-  'tshirt-1': { avg: 5, count: 47 },
-  'ebook-1': { avg: 4, count: 12 },
-  'perfume-1': { avg: 5, count: 31 },
-};
-
 export function ProductCard({ product }: ProductCardProps) {
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0;
 
-  const rating = PRODUCT_RATINGS[product.id];
+  const rating = getProductRating(product.id);
   const soldOut = isProductSoldOut(product.id);
   const minStock = getProductMinStock(product.id);
   const isLowStock = !soldOut && minStock <= 9;
