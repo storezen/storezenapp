@@ -1,7 +1,7 @@
 import { Link } from 'wouter';
 import { Product } from '../data/products';
 import { motion } from 'framer-motion';
-import { StockBadge } from './StockBadge';
+import { StockBadge, getProductMinStock, isProductSoldOut } from './StockBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -31,29 +31,52 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   const rating = PRODUCT_RATINGS[product.id];
+  const soldOut = isProductSoldOut(product.id);
+  const minStock = getProductMinStock(product.id);
+  const isLowStock = !soldOut && minStock <= 9;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
+      whileHover={soldOut ? {} : { y: -4 }}
       transition={{ duration: 0.3 }}
-      className="group relative flex flex-col bg-card border border-card-border rounded-xl overflow-hidden shadow-sm hover:shadow-md"
+      className={`group relative flex flex-col bg-card border border-card-border rounded-xl overflow-hidden shadow-sm hover:shadow-md ${soldOut ? 'opacity-60' : ''}`}
       data-testid={`card-product-${product.id}`}
     >
       <Link href={`/product/${product.id}`} className="block relative aspect-square overflow-hidden bg-muted">
-        {discount > 0 && (
+        {/* Sale badge */}
+        {discount > 0 && !soldOut && (
           <div className="absolute top-2 left-2 z-10 bg-destructive text-destructive-foreground text-xs font-bold px-2 py-1 rounded-md">
             Save {discount}%
           </div>
         )}
+
+        {/* Low Stock badge on image */}
+        {isLowStock && (
+          <div className="absolute top-2 right-2 z-10 bg-destructive text-destructive-foreground text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide stock-pulse">
+            Low Stock
+          </div>
+        )}
+
+        {/* Sold Out overlay */}
+        {soldOut && (
+          <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="bg-foreground text-background text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full">
+              Sold Out
+            </span>
+          </div>
+        )}
+
+        {/* Category pill */}
         <div className="absolute bottom-2 left-2 z-10 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
           {product.category}
         </div>
+
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className={`w-full h-full object-cover transition-transform duration-500 ${soldOut ? '' : 'group-hover:scale-105'}`}
           loading="lazy"
         />
       </Link>
@@ -83,10 +106,14 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <Link
           href={`/product/${product.id}`}
-          className="mt-auto w-full bg-foreground text-background font-semibold py-3 rounded-lg text-center transition-colors hover:bg-primary hover:text-primary-foreground"
+          className={`mt-auto w-full font-semibold py-3 rounded-lg text-center transition-colors ${
+            soldOut
+              ? 'bg-muted text-muted-foreground cursor-not-allowed'
+              : 'bg-foreground text-background hover:bg-primary hover:text-primary-foreground'
+          }`}
           data-testid={`button-order-${product.id}`}
         >
-          Order Now
+          {soldOut ? 'Sold Out' : 'Order Now'}
         </Link>
       </div>
     </motion.div>

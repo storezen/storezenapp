@@ -280,3 +280,17 @@
     inset: -1px;
   }
 }
+
+/* Stock urgency pulse animation */
+@keyframes stock-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.stock-pulse {
+  animation: stock-pulse 2s ease-in-out infinite;
+}
+
+/* Hide scrollbar for thumbnail strip etc. */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -6,7 +6,7 @@ import { STORE_CONFIG } from '../config';
 import { useCart } from '../hooks/use-cart';
 import { trackViewContent } from '../lib/tiktok-pixel';
 import { useToast } from '../hooks/use-toast';
-import { StockBadge, getProductStock } from '../components/StockBadge';
+import { StockIndicator, getVariantStock } from '../components/StockBadge';
 import { ReviewsSection } from '../components/ReviewsSection';
 import { RelatedProducts } from '../components/RelatedProducts';
 import { CODForm } from '../components/CODForm';
@@ -70,7 +70,14 @@ export default function ProductDetail() {
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - currentPrice) / product.compareAtPrice) * 100)
     : 0;
-  const stock = getProductStock(product.id);
+  const variantStock = getVariantStock(
+    product.id,
+    selectedSize || undefined,
+    selectedColor || undefined,
+    selectedOption?.name
+  );
+  const stock = variantStock.current;
+  const soldOut = stock === 0;
   const rating = PRODUCT_RATINGS[product.id];
 
   const handleAddToCart = () => {
@@ -159,7 +166,7 @@ export default function ProductDetail() {
           </div>
 
           <div className="mb-5">
-            <StockBadge productId={product.id} />
+            <StockIndicator current={variantStock.current} total={variantStock.total} />
           </div>
 
           <p className="text-muted-foreground text-sm leading-relaxed mb-7">{product.description}</p>
@@ -261,30 +268,38 @@ export default function ProductDetail() {
 
           {/* Desktop Buttons */}
           <div className="hidden md:flex flex-col gap-3 mt-auto">
-            <div className="flex gap-3">
-              <button
-                onClick={handleAddToCart}
-                className={`flex-1 border-2 border-foreground bg-transparent text-foreground h-14 rounded-full font-black uppercase tracking-widest transition-all ${addedAnimation ? 'bg-green-500 border-green-500 text-white' : 'hover:bg-muted'}`}
-                data-testid="button-add-to-cart"
-              >
-                {addedAnimation ? 'Added!' : 'Add to Cart'}
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="flex-[2] bg-primary text-primary-foreground h-14 rounded-full font-black uppercase tracking-widest transition-all hover:bg-primary/90 hover-elevate shadow-lg shadow-primary/20"
-                data-testid="button-buy-now"
-              >
-                Buy Now
-              </button>
-            </div>
-            <button
-              onClick={handleWhatsAppOrder}
-              className="w-full bg-[#25D366] text-white h-12 rounded-full font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#128C7E] transition-colors"
-              data-testid="button-whatsapp-order"
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Order via WhatsApp
-            </button>
+            {soldOut ? (
+              <div className="w-full h-14 rounded-full border-2 border-destructive/30 bg-destructive/5 flex items-center justify-center text-destructive font-black uppercase tracking-widest text-sm">
+                Out of Stock
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleAddToCart}
+                    className={`flex-1 border-2 border-foreground bg-transparent text-foreground h-14 rounded-full font-black uppercase tracking-widest transition-all ${addedAnimation ? 'bg-green-500 border-green-500 text-white' : 'hover:bg-muted'}`}
+                    data-testid="button-add-to-cart"
+                  >
+                    {addedAnimation ? 'Added!' : 'Add to Cart'}
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    className="flex-[2] bg-primary text-primary-foreground h-14 rounded-full font-black uppercase tracking-widest transition-all hover:bg-primary/90 hover-elevate shadow-lg shadow-primary/20"
+                    data-testid="button-buy-now"
+                  >
+                    Buy Now
+                  </button>
+                </div>
+                <button
+                  onClick={handleWhatsAppOrder}
+                  className="w-full bg-[#25D366] text-white h-12 rounded-full font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#128C7E] transition-colors"
+                  data-testid="button-whatsapp-order"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  Order via WhatsApp
+                </button>
+              </>
+            )}
           </div>
         </div>
       </main>
@@ -297,34 +312,42 @@ export default function ProductDetail() {
 
       {/* Fixed Mobile CTA */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-border md:hidden z-40 flex flex-col gap-2 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.5)]">
-        <div className="flex gap-2">
-          <button
-            onClick={handleAddToCart}
-            className={`w-14 h-12 border-2 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${addedAnimation ? 'bg-green-500 border-green-500 text-white' : 'border-border bg-card'}`}
-            aria-label="Add to cart"
-            data-testid="button-add-to-cart-mobile"
-          >
-            {addedAnimation
-              ? <Check size={20} />
-              : <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-            }
-          </button>
-          <button
-            onClick={handleBuyNow}
-            className="flex-1 bg-primary text-primary-foreground h-12 rounded-xl font-black uppercase tracking-wide shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform text-sm"
-            data-testid="button-buy-now-mobile"
-          >
-            Buy Now — Rs. {currentPrice * quantity}
-          </button>
-        </div>
-        <button
-          onClick={handleWhatsAppOrder}
-          className="w-full bg-[#25D366] text-white h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-          data-testid="button-whatsapp-mobile"
-        >
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Order via WhatsApp
-        </button>
+        {soldOut ? (
+          <div className="w-full h-12 rounded-xl border-2 border-destructive/30 bg-destructive/5 flex items-center justify-center text-destructive font-black uppercase tracking-widest text-sm">
+            Out of Stock
+          </div>
+        ) : (
+          <>
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddToCart}
+                className={`w-14 h-12 border-2 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${addedAnimation ? 'bg-green-500 border-green-500 text-white' : 'border-border bg-card'}`}
+                aria-label="Add to cart"
+                data-testid="button-add-to-cart-mobile"
+              >
+                {addedAnimation
+                  ? <Check size={20} />
+                  : <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                }
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 bg-primary text-primary-foreground h-12 rounded-xl font-black uppercase tracking-wide shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform text-sm"
+                data-testid="button-buy-now-mobile"
+              >
+                Buy Now — Rs. {currentPrice * quantity}
+              </button>
+            </div>
+            <button
+              onClick={handleWhatsAppOrder}
+              className="w-full bg-[#25D366] text-white h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              data-testid="button-whatsapp-mobile"
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Order via WhatsApp
+            </button>
+          </>
+        )}
       </div>
 
       <CODForm open={isCODOpen} onOpenChange={setIsCODOpen} items={cartItems} onOrderSuccess={() => setLocation('/')} />
