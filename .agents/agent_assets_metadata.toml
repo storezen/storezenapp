@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "wa3J-MTNTkflkcWmImZX2"
+uri = "file://artifacts/pk-store/src/assets/tshirt.png"
+type = "image"
+title = "Band T-Shirt product photo"
+
+[[generated]]
+id = "aZwxm8SkBI5deo9QdYHjS"
+uri = "file://artifacts/pk-store/src/assets/ebook.png"
+type = "image"
+title = "Rock Music eBook cover"
+
+[[generated]]
+id = "IREsGZc280Cfk317rASpA"
+uri = "file://artifacts/pk-store/src/assets/perfume.png"
+type = "image"
+title = "Premium Perfume bottle"
+
+[[generated]]
+id = "lujK3ECbRQGcH6kUfstWe"
+uri = "file://artifacts/pk-store/src/assets/hero.png"
+type = "image"
+title = "Store hero banner"
