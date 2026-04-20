@@ -294,3 +294,18 @@
 /* Hide scrollbar for thumbnail strip etc. */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Size Guide modal slide-up animation */
+@keyframes size-guide-in {
+  from { transform: translateY(100%); opacity: 0.8; }
+  to   { transform: translateY(0);    opacity: 1;   }
+}
+@media (min-width: 768px) {
+  @keyframes size-guide-in {
+    from { transform: translate(-50%, calc(-50% + 20px)); opacity: 0; }
+    to   { transform: translate(-50%, -50%);              opacity: 1; }
+  }
+}
+.animate-size-guide-in {
+  animation: size-guide-in 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+}

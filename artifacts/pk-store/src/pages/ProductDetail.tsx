@@ -11,6 +11,7 @@ import { ReviewsSection } from '../components/ReviewsSection';
 import { RelatedProducts } from '../components/RelatedProducts';
 import { CODForm } from '../components/CODForm';
 import { ProductImageGallery } from '../components/ProductImageGallery';
+import { SizeGuideModal } from '../components/SizeGuideModal';
 
 function StarRatingDisplay({ rating, count }: { rating: number; count: number }) {
   return (
@@ -47,6 +48,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isCODOpen, setIsCODOpen] = useState(false);
   const [addedAnimation, setAddedAnimation] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -179,7 +181,14 @@ export default function ProductDetail() {
               <div>
                 <div className="flex justify-between items-center mb-2.5">
                   <span className="font-bold text-sm uppercase tracking-wider">Size: <span className="font-normal normal-case text-muted-foreground">{selectedSize}</span></span>
-                  <span className="text-muted-foreground text-xs underline cursor-pointer">Size Guide</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeGuideOpen(true)}
+                    className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 hover:underline transition-colors"
+                    data-testid="button-size-guide"
+                  >
+                    📏 Size Guide
+                  </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {product.variants.sizes.map(size => (
@@ -353,6 +362,7 @@ export default function ProductDetail() {
       </div>
 
       <CODForm open={isCODOpen} onOpenChange={setIsCODOpen} items={cartItems} onOrderSuccess={() => setLocation('/')} />
+      <SizeGuideModal open={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} />
     </div>
   );
 }
