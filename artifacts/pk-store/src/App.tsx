@@ -8,19 +8,18 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import ProductDetail from "@/pages/ProductDetail";
 import Cart from "@/pages/Cart";
+import Catalog from "@/pages/Catalog";
+import Contact from "@/pages/Contact";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { initPixel, trackPageView } from "@/lib/tiktok-pixel";
 
 const queryClient = new QueryClient();
 
-// Tracker component listening to route changes
 function RouteTracker() {
   const [location] = useLocation();
-  
   useEffect(() => {
     trackPageView();
   }, [location]);
-  
   return null;
 }
 
@@ -28,6 +27,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/catalog" component={Catalog} />
+      <Route path="/contact" component={Contact} />
       <Route path="/product/:id" component={ProductDetail} />
       <Route path="/cart" component={Cart} />
       <Route component={NotFound} />

@@ -33,13 +33,20 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 - **Preview path**: `/`
 - **Purpose**: Pakistani e-commerce storefront for TikTok-driven traffic
 - **Features**:
-  - Product listing with search + category filter
-  - Product detail page with variant selection
+  - Multi-page navigation: Home, Catalog, Contact (Shopify-style)
+  - Shared Navbar with announcement bar, logo, nav links, search, cart icon
+  - Home page: hero banner, trust badges, Shop by Category cards, Trending Now products
+  - Catalog page: all products with sort dropdown + product count + category filter pills
+  - Contact page: WhatsApp-linked contact form with Pakistani phone validation
+  - Product detail page with variant selection, reviews, stock badge, related products
   - WhatsApp order button (floating + per-product)
   - COD (Cash on Delivery) order form with Pakistani phone validation
   - TikTok Pixel tracking (PageView, ViewContent, InitiateCheckout, CompletePayment)
   - Cart with localStorage persistence
+  - Countdown timer (Flash Sale) component
 - **Config file**: `artifacts/pk-store/src/config.ts`
   - `storeName`, `whatsappNumber`, `tikTokPixelId`, `deliveryCharge`, `currency`
 - **Products data**: `artifacts/pk-store/src/data/products.ts`
 - **Product images**: `artifacts/pk-store/public/` (tshirt.png, ebook.png, perfume.png, hero.png)
+- **Key components**: `Navbar.tsx`, `ProductCard.tsx`, `CountdownTimer.tsx`, `WhatsAppButton.tsx`
+- **Pages**: Home, Catalog, Contact, ProductDetail, Cart
