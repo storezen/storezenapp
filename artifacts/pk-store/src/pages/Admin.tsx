@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   ShieldCheck, LogOut, Search, Download, Package, TrendingUp,
   Clock, AlertCircle, MessageCircle, Copy, ChevronDown, Eye,
   Check, RefreshCw, Filter, BarChart3, Truck, CheckCircle2, XCircle,
-  ShoppingBag,
+  ShoppingBag, Send, FileText,
 } from 'lucide-react';
 import { STORE_CONFIG } from '../config';
 import {
@@ -12,6 +12,8 @@ import {
 } from '../lib/orders';
 import { getWhatsAppTemplate } from '../lib/orders';
 import { AdminProducts } from '../components/admin/AdminProducts';
+import { AdminTemplates } from '../components/admin/AdminTemplates';
+import { getTemplates, fillTemplate, orderToVars } from '../lib/wa-templates';
 
 const ADMIN_AUTH_KEY = 'sw_admin_auth';
 
@@ -193,6 +195,70 @@ function StatusDropdown({ order, onChange }: { order: StoredOrder; onChange: (id
 }
 
 /* ── Mobile Order Card ───────────────────────────────────────────────── */
+/* ── Send Update Dropdown ─────────────────────────────────────────────── */
+function SendUpdateDropdown({ order }: { order: StoredOrder }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const templates = getTemplates();
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  function sendTemplate(templateId: string) {
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl) return;
+    const vars = orderToVars(order);
+    const msg  = fillTemplate(tpl.text, vars);
+    const digits = order.phone.replace(/\D/g, '');
+    const normalized = digits.startsWith('92') ? digits : digits.startsWith('0') ? '92' + digits.slice(1) : '92' + digits;
+    window.open(`https://wa.me/${normalized}?text=${encodeURIComponent(msg)}`, '_blank');
+    setOpen(false);
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        data-testid={`button-send-update-${order.orderId}`}
+        className="flex items-center gap-1 text-xs bg-[#25D366]/15 hover:bg-[#25D366]/30 text-[#25D366] px-2 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+        title="Send WhatsApp template"
+      >
+        <Send size={11} /> Send Update <ChevronDown size={10} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute z-50 bottom-full mb-1.5 left-0 min-w-[200px] bg-[#111118] border border-gray-700 rounded-xl shadow-2xl overflow-hidden">
+          <div className="px-3 py-2 border-b border-gray-800">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Choose Template</p>
+          </div>
+          {templates.map(t => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => sendTemplate(t.id)}
+              data-testid={`button-template-${order.orderId}-${t.id}`}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-800/60 transition-colors text-left group"
+            >
+              <span className="text-base leading-none">{t.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-gray-200 group-hover:text-white transition-colors">{t.name}</p>
+                <p className="text-[10px] text-gray-600 truncate">{t.text.split('\n')[0].slice(0, 40)}…</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MobileOrderCard({ order, onStatusChange, onCopy, onWhatsApp }: {
   order: StoredOrder;
   onStatusChange: (id: string, s: OrderStatus) => void;
@@ -250,14 +316,7 @@ function MobileOrderCard({ order, onStatusChange, onCopy, onWhatsApp }: {
         >
           <Copy size={11} /> Copy
         </button>
-        <button
-          onClick={() => onWhatsApp(order)}
-          className="flex items-center gap-1 text-xs bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] px-2 py-1.5 rounded-lg transition-colors"
-          title="Send WhatsApp update"
-          data-testid={`button-whatsapp-${order.orderId}`}
-        >
-          <MessageCircle size={11} /> WhatsApp
-        </button>
+        <SendUpdateDropdown order={order} />
         {order.status !== 'shipped' && order.status !== 'delivered' && order.status !== 'cancelled' && (
           <button
             onClick={() => onStatusChange(order.orderId, 'shipped')}
@@ -282,7 +341,7 @@ function MobileOrderCard({ order, onStatusChange, onCopy, onWhatsApp }: {
 /* ── Main Admin Dashboard ────────────────────────────────────────────── */
 export default function Admin() {
   const [authed, setAuthed] = useState(() => localStorage.getItem(ADMIN_AUTH_KEY) === 'true');
-  const [activeTab, setActiveTab] = useState<'orders' | 'products'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'templates'>('orders');
   const [orders, setOrders]   = useState<StoredOrder[]>([]);
   const [search, setSearch]   = useState('');
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
@@ -374,6 +433,14 @@ export default function Admin() {
           >
             <Package size={12} /> Products
           </button>
+          <button
+            onClick={() => setActiveTab('templates')}
+            data-testid="tab-templates"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
+              ${activeTab === 'templates' ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            <FileText size={12} /> Templates
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -412,11 +479,21 @@ export default function Admin() {
         >
           <Package size={12} /> Products
         </button>
+        <button
+          onClick={() => setActiveTab('templates')}
+          data-testid="tab-templates-mobile"
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-colors
+            ${activeTab === 'templates' ? 'bg-rose-500/20 text-rose-300' : 'text-gray-600'}`}
+        >
+          <FileText size={12} /> Templates
+        </button>
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
       {activeTab === 'products' && <AdminProducts />}
+
+      {activeTab === 'templates' && <AdminTemplates />}
 
       {activeTab === 'orders' && (<div className="space-y-6">
 
@@ -562,14 +639,7 @@ export default function Admin() {
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <StatusDropdown order={order} onChange={handleStatusChange} />
 
-                            <button
-                              onClick={() => handleWhatsApp(order)}
-                              className="flex items-center gap-1 text-xs bg-[#25D366]/15 hover:bg-[#25D366]/30 text-[#25D366] px-2 py-1.5 rounded-lg transition-colors whitespace-nowrap"
-                              title="Send WhatsApp update"
-                              data-testid={`button-whatsapp-${order.orderId}`}
-                            >
-                              <MessageCircle size={11} /> WA
-                            </button>
+                            <SendUpdateDropdown order={order} />
 
                             {(order.status === 'placed' || order.status === 'confirmed') && (
                               <button
