@@ -8,9 +8,368 @@
 import * as zod from "zod";
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all collections
+ */
+export const ListCollectionsQueryParams = zod.object({
+  activeOnly: zod.coerce.boolean().optional(),
+});
+
+export const ListCollectionsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  slug: zod.string(),
+  description: zod.string().nullish(),
+  image: zod.string().nullish(),
+  sortOrder: zod.number(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListCollectionsResponse = zod.array(ListCollectionsResponseItem);
+
+/**
+ * @summary Create a new collection
+ */
+export const createCollectionBodySortOrderDefault = 0;
+export const createCollectionBodyActiveDefault = true;
+
+export const CreateCollectionBody = zod.object({
+  name: zod.string(),
+  slug: zod.string(),
+  description: zod.string().nullish(),
+  image: zod.string().nullish(),
+  sortOrder: zod.number().default(createCollectionBodySortOrderDefault),
+  active: zod.boolean().default(createCollectionBodyActiveDefault),
+});
+
+/**
+ * @summary Get a single collection
+ */
+export const GetCollectionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetCollectionResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  slug: zod.string(),
+  description: zod.string().nullish(),
+  image: zod.string().nullish(),
+  sortOrder: zod.number(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a collection
+ */
+export const UpdateCollectionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCollectionBody = zod.object({
+  name: zod.string().optional(),
+  slug: zod.string().optional(),
+  description: zod.string().nullish(),
+  image: zod.string().nullish(),
+  sortOrder: zod.number().optional(),
+  active: zod.boolean().optional(),
+});
+
+export const UpdateCollectionResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  slug: zod.string(),
+  description: zod.string().nullish(),
+  image: zod.string().nullish(),
+  sortOrder: zod.number(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a collection
+ */
+export const DeleteCollectionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get all products in a collection
+ */
+export const GetCollectionProductsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetCollectionProductsResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  price: zod.number(),
+  compareAtPrice: zod.number().nullish(),
+  stock: zod.number(),
+  category: zod.string(),
+  image: zod.string(),
+  images: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  active: zod.boolean(),
+  variants: zod.unknown().nullish(),
+  metaTitle: zod.string().nullish(),
+  metaDescription: zod.string().nullish(),
+  collectionIds: zod.array(zod.number()),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const GetCollectionProductsResponse = zod.array(
+  GetCollectionProductsResponseItem,
+);
+
+/**
+ * @summary Add product(s) to a collection
+ */
+export const AddProductToCollectionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AddProductToCollectionBody = zod.object({
+  productIds: zod.array(zod.string()),
+});
+
+export const AddProductToCollectionResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+/**
+ * @summary Remove a product from a collection
+ */
+export const RemoveProductFromCollectionParams = zod.object({
+  id: zod.coerce.number(),
+  productId: zod.coerce.string(),
+});
+
+/**
+ * @summary List products
+ */
+export const listProductsQueryLimitDefault = 100;
+export const listProductsQueryOffsetDefault = 0;
+
+export const ListProductsQueryParams = zod.object({
+  collectionId: zod.coerce.number().optional(),
+  category: zod.coerce.string().optional(),
+  search: zod.coerce.string().optional(),
+  activeOnly: zod.coerce.boolean().optional(),
+  limit: zod.coerce.number().default(listProductsQueryLimitDefault),
+  offset: zod.coerce.number().default(listProductsQueryOffsetDefault),
+});
+
+export const ListProductsResponse = zod.object({
+  products: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string().nullish(),
+      description: zod.string().nullish(),
+      price: zod.number(),
+      compareAtPrice: zod.number().nullish(),
+      stock: zod.number(),
+      category: zod.string(),
+      image: zod.string(),
+      images: zod.array(zod.string()),
+      tags: zod.array(zod.string()),
+      active: zod.boolean(),
+      variants: zod.unknown().nullish(),
+      metaTitle: zod.string().nullish(),
+      metaDescription: zod.string().nullish(),
+      collectionIds: zod.array(zod.number()),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  total: zod.number(),
+  limit: zod.number(),
+  offset: zod.number(),
+});
+
+/**
+ * @summary Create a product
+ */
+export const createProductBodyStockDefault = 0;
+export const createProductBodyActiveDefault = true;
+
+export const CreateProductBody = zod.object({
+  id: zod.string().optional(),
+  name: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  price: zod.number(),
+  compareAtPrice: zod.number().nullish(),
+  stock: zod.number().default(createProductBodyStockDefault),
+  category: zod.string(),
+  image: zod.string(),
+  images: zod.array(zod.string()).optional(),
+  tags: zod.array(zod.string()).optional(),
+  active: zod.boolean().default(createProductBodyActiveDefault),
+  variants: zod.unknown().nullish(),
+  metaTitle: zod.string().nullish(),
+  metaDescription: zod.string().nullish(),
+  collectionIds: zod.array(zod.number()).optional(),
+});
+
+/**
+ * @summary Bulk import products from CSV
+ */
+export const importProductsBodyReplaceExistingDefault = false;
+
+export const ImportProductsBody = zod.object({
+  csv: zod
+    .string()
+    .describe("Raw CSV text (Shopify format or SmartWear format)"),
+  collectionId: zod
+    .number()
+    .nullish()
+    .describe("Optionally assign all imported products to this collection"),
+  replaceExisting: zod
+    .boolean()
+    .default(importProductsBodyReplaceExistingDefault),
+});
+
+export const ImportProductsResponse = zod.object({
+  imported: zod.number(),
+  updated: zod.number(),
+  errors: zod.array(zod.string()),
+  products: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string().nullish(),
+      description: zod.string().nullish(),
+      price: zod.number(),
+      compareAtPrice: zod.number().nullish(),
+      stock: zod.number(),
+      category: zod.string(),
+      image: zod.string(),
+      images: zod.array(zod.string()),
+      tags: zod.array(zod.string()),
+      active: zod.boolean(),
+      variants: zod.unknown().nullish(),
+      metaTitle: zod.string().nullish(),
+      metaDescription: zod.string().nullish(),
+      collectionIds: zod.array(zod.number()),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get a single product
+ */
+export const GetProductParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetProductResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  price: zod.number(),
+  compareAtPrice: zod.number().nullish(),
+  stock: zod.number(),
+  category: zod.string(),
+  image: zod.string(),
+  images: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  active: zod.boolean(),
+  variants: zod.unknown().nullish(),
+  metaTitle: zod.string().nullish(),
+  metaDescription: zod.string().nullish(),
+  collectionIds: zod.array(zod.number()),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a product
+ */
+export const UpdateProductParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateProductBody = zod.object({
+  name: zod.string().optional(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  price: zod.number().optional(),
+  compareAtPrice: zod.number().nullish(),
+  stock: zod.number().optional(),
+  category: zod.string().optional(),
+  image: zod.string().optional(),
+  images: zod.array(zod.string()).optional(),
+  tags: zod.array(zod.string()).optional(),
+  active: zod.boolean().optional(),
+  variants: zod.unknown().nullish(),
+  metaTitle: zod.string().nullish(),
+  metaDescription: zod.string().nullish(),
+  collectionIds: zod.array(zod.number()).optional(),
+});
+
+export const UpdateProductResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  slug: zod.string().nullish(),
+  description: zod.string().nullish(),
+  price: zod.number(),
+  compareAtPrice: zod.number().nullish(),
+  stock: zod.number(),
+  category: zod.string(),
+  image: zod.string(),
+  images: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  active: zod.boolean(),
+  variants: zod.unknown().nullish(),
+  metaTitle: zod.string().nullish(),
+  metaDescription: zod.string().nullish(),
+  collectionIds: zod.array(zod.number()),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a product
+ */
+export const DeleteProductParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+/**
+ * @summary Get collections a product belongs to
+ */
+export const GetProductCollectionsParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetProductCollectionsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  slug: zod.string(),
+  description: zod.string().nullish(),
+  image: zod.string().nullish(),
+  sortOrder: zod.number(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const GetProductCollectionsResponse = zod.array(
+  GetProductCollectionsResponseItem,
+);

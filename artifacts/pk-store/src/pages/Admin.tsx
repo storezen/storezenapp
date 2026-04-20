@@ -3,7 +3,7 @@ import {
   ShieldCheck, LogOut, Search, Download, Package, TrendingUp,
   Clock, AlertCircle, MessageCircle, Copy, ChevronDown, Eye,
   Check, RefreshCw, Filter, BarChart3, Truck, CheckCircle2, XCircle,
-  ShoppingBag, Send, FileText,
+  ShoppingBag, Send, FileText, FolderOpen,
 } from 'lucide-react';
 import { STORE_CONFIG } from '../config';
 import {
@@ -13,6 +13,8 @@ import {
 import { getWhatsAppTemplate } from '../lib/orders';
 import { AdminProducts } from '../components/admin/AdminProducts';
 import { AdminTemplates } from '../components/admin/AdminTemplates';
+import { AdminCollections } from '../components/admin/AdminCollections';
+import { AdminTikTokPixel } from '../components/admin/AdminTikTokPixel';
 import { getTemplates, fillTemplate, orderToVars } from '../lib/wa-templates';
 
 const ADMIN_AUTH_KEY = 'sw_admin_auth';
@@ -341,7 +343,7 @@ function MobileOrderCard({ order, onStatusChange, onCopy, onWhatsApp }: {
 /* ── Main Admin Dashboard ────────────────────────────────────────────── */
 export default function Admin() {
   const [authed, setAuthed] = useState(() => localStorage.getItem(ADMIN_AUTH_KEY) === 'true');
-  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'templates'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'templates' | 'collections' | 'tiktok'>('orders');
   const [orders, setOrders]   = useState<StoredOrder[]>([]);
   const [search, setSearch]   = useState('');
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
@@ -417,30 +419,23 @@ export default function Admin() {
 
         {/* Tabs */}
         <div className="hidden sm:flex items-center bg-[#0d0d1a] rounded-xl border border-gray-800 p-1 gap-1">
-          <button
-            onClick={() => setActiveTab('orders')}
-            data-testid="tab-orders"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
-              ${activeTab === 'orders' ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <ShoppingBag size={12} /> Orders
-          </button>
-          <button
-            onClick={() => setActiveTab('products')}
-            data-testid="tab-products"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
-              ${activeTab === 'products' ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <Package size={12} /> Products
-          </button>
-          <button
-            onClick={() => setActiveTab('templates')}
-            data-testid="tab-templates"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
-              ${activeTab === 'templates' ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <FileText size={12} /> Templates
-          </button>
+          {([
+            { id: 'orders',      icon: <ShoppingBag size={12} />, label: 'Orders' },
+            { id: 'products',    icon: <Package size={12} />,     label: 'Products' },
+            { id: 'collections', icon: <FolderOpen size={12} />,  label: 'Collections' },
+            { id: 'templates',   icon: <FileText size={12} />,    label: 'Templates' },
+            { id: 'tiktok',      icon: <TrendingUp size={12} />,  label: 'TikTok Pixel' },
+          ] as const).map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              data-testid={`tab-${tab.id}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
+                ${activeTab === tab.id ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
         </div>
 
         <div className="flex items-center gap-2">
@@ -464,36 +459,37 @@ export default function Admin() {
       </header>
 
       {/* Mobile Tabs */}
-      <div className="sm:hidden flex items-center bg-[#111118] border-b border-gray-800 px-4 py-2 gap-2">
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-colors
-            ${activeTab === 'orders' ? 'bg-rose-500/20 text-rose-300' : 'text-gray-600'}`}
-        >
-          <ShoppingBag size={12} /> Orders
-        </button>
-        <button
-          onClick={() => setActiveTab('products')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-colors
-            ${activeTab === 'products' ? 'bg-rose-500/20 text-rose-300' : 'text-gray-600'}`}
-        >
-          <Package size={12} /> Products
-        </button>
-        <button
-          onClick={() => setActiveTab('templates')}
-          data-testid="tab-templates-mobile"
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-colors
-            ${activeTab === 'templates' ? 'bg-rose-500/20 text-rose-300' : 'text-gray-600'}`}
-        >
-          <FileText size={12} /> Templates
-        </button>
+      <div className="sm:hidden overflow-x-auto">
+        <div className="flex items-center bg-[#111118] border-b border-gray-800 px-3 py-2 gap-1.5 min-w-max">
+          {([
+            { id: 'orders',      icon: <ShoppingBag size={11} />, label: 'Orders' },
+            { id: 'products',    icon: <Package size={11} />,     label: 'Products' },
+            { id: 'collections', icon: <FolderOpen size={11} />,  label: 'Collections' },
+            { id: 'templates',   icon: <FileText size={11} />,    label: 'Templates' },
+            { id: 'tiktok',      icon: <TrendingUp size={11} />,  label: 'TikTok' },
+          ] as const).map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              data-testid={`tab-${tab.id}-mobile`}
+              className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors whitespace-nowrap
+                ${activeTab === tab.id ? 'bg-rose-500/20 text-rose-300' : 'text-gray-600'}`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
       {activeTab === 'products' && <AdminProducts />}
 
+      {activeTab === 'collections' && <AdminCollections />}
+
       {activeTab === 'templates' && <AdminTemplates />}
+
+      {activeTab === 'tiktok' && <AdminTikTokPixel />}
 
       {activeTab === 'orders' && (<div className="space-y-6">
 

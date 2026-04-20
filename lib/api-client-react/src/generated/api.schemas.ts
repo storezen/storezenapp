@@ -8,3 +8,138 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface SuccessResponse {
+  ok: boolean;
+}
+
+export interface Collection {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  image?: string | null;
+  sortOrder: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCollectionInput {
+  name: string;
+  slug: string;
+  description?: string | null;
+  image?: string | null;
+  sortOrder?: number;
+  active?: boolean;
+}
+
+export interface UpdateCollectionInput {
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  image?: string | null;
+  sortOrder?: number;
+  active?: boolean;
+}
+
+export interface AddProductsInput {
+  productIds: string[];
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug?: string | null;
+  description?: string | null;
+  price: number;
+  compareAtPrice?: number | null;
+  stock: number;
+  category: string;
+  image: string;
+  images: string[];
+  tags: string[];
+  active: boolean;
+  variants?: unknown | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  collectionIds: number[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductsListResponse {
+  products: Product[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CreateProductInput {
+  id?: string;
+  name: string;
+  slug?: string | null;
+  description?: string | null;
+  price: number;
+  compareAtPrice?: number | null;
+  stock?: number;
+  category: string;
+  image: string;
+  images?: string[];
+  tags?: string[];
+  active?: boolean;
+  variants?: unknown | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  collectionIds?: number[];
+}
+
+export interface UpdateProductInput {
+  name?: string;
+  slug?: string | null;
+  description?: string | null;
+  price?: number;
+  compareAtPrice?: number | null;
+  stock?: number;
+  category?: string;
+  image?: string;
+  images?: string[];
+  tags?: string[];
+  active?: boolean;
+  variants?: unknown | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  collectionIds?: number[];
+}
+
+export interface ImportProductsInput {
+  /** Raw CSV text (Shopify format or SmartWear format) */
+  csv: string;
+  /** Optionally assign all imported products to this collection */
+  collectionId?: number | null;
+  replaceExisting?: boolean;
+}
+
+export interface ImportResult {
+  imported: number;
+  updated: number;
+  errors: string[];
+  products: Product[];
+}
+
+export type ListCollectionsParams = {
+  activeOnly?: boolean;
+};
+
+export type ListProductsParams = {
+  collectionId?: number;
+  category?: string;
+  search?: string;
+  activeOnly?: boolean;
+  limit?: number;
+  offset?: number;
+};

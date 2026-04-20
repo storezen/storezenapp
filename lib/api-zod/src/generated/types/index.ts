@@ -6,4 +6,18 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./addProductsInput";
+export * from "./collection";
+export * from "./createCollectionInput";
+export * from "./createProductInput";
+export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./importProductsInput";
+export * from "./importResult";
+export * from "./listCollectionsParams";
+export * from "./listProductsParams";
+export * from "./product";
+export * from "./productsListResponse";
+export * from "./successResponse";
+export * from "./updateCollectionInput";
+export * from "./updateProductInput";
