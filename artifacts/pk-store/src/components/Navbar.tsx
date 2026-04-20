@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ShoppingBag, Search, Menu, X } from 'lucide-react';
+import { ShoppingBag, Search, Menu, X, Heart } from 'lucide-react';
 import { useCart } from '../hooks/use-cart';
+import { useWishlist } from '../hooks/use-wishlist';
 import { STORE_CONFIG } from '../config';
 import { StoreLogo } from './StoreLogo';
 
@@ -20,6 +21,7 @@ interface NavbarProps {
 export function Navbar({ onSearchChange, searchValue = '', showSearch = false }: NavbarProps) {
   const [location] = useLocation();
   const { cartCount } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const [mobileOpen,    setMobileOpen]    = useState(false);
   const [searchOpen,    setSearchOpen]    = useState(false);
   const [announceIdx,   setAnnounceIdx]   = useState(0);
@@ -33,6 +35,7 @@ export function Navbar({ onSearchChange, searchValue = '', showSearch = false }:
   const navLinks = [
     { label: 'Home',        href: '/'            },
     { label: 'Catalog',     href: '/catalog'     },
+    { label: 'Wishlist',    href: '/wishlist'    },
     { label: 'Track Order', href: '/track-order' },
     { label: 'Contact',     href: '/contact'     },
   ];
@@ -88,6 +91,21 @@ export function Navbar({ onSearchChange, searchValue = '', showSearch = false }:
             data-testid="button-search-open"
           >
             <Search size={20} />
+          </button>
+
+          {/* Wishlist */}
+          <button
+            className="relative p-2 hover:bg-muted rounded-full transition-colors"
+            onClick={() => setLocation('/wishlist')}
+            aria-label="Wishlist"
+            data-testid="button-wishlist-nav"
+          >
+            <Heart size={20} className={wishlistCount > 0 ? 'text-rose-500 fill-rose-500' : ''} />
+            {wishlistCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 bg-rose-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black">
+                {wishlistCount}
+              </span>
+            )}
           </button>
 
           {/* Cart */}

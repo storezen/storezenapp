@@ -7,6 +7,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PageLoader } from "@/components/SkeletonCard";
 import { initPixel, trackPageView } from "@/lib/tiktok-pixel";
+import { WishlistProvider } from "@/hooks/use-wishlist";
 
 /* ── Code-split page imports ────────────────────────────────────────────────── */
 const Home              = lazy(() => import("@/pages/Home"));
@@ -16,6 +17,7 @@ const Catalog           = lazy(() => import("@/pages/Catalog"));
 const Contact           = lazy(() => import("@/pages/Contact"));
 const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
 const TrackOrder        = lazy(() => import("@/pages/TrackOrder"));
+const Wishlist          = lazy(() => import("@/pages/Wishlist"));
 const NotFound          = lazy(() => import("@/pages/not-found"));
 
 const queryClient = new QueryClient();
@@ -40,6 +42,7 @@ function Router() {
         <Route path="/cart"               component={Cart} />
         <Route path="/order-confirmation" component={OrderConfirmation} />
         <Route path="/track-order"        component={TrackOrder} />
+        <Route path="/wishlist"           component={Wishlist} />
         <Route                            component={NotFound} />
       </Switch>
     </Suspense>
@@ -53,15 +56,17 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <RouteTracker />
-          <Router />
-        </WouterRouter>
-        <WhatsAppButton />
-        <InstallPrompt />
-        <Toaster />
-      </TooltipProvider>
+      <WishlistProvider>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <RouteTracker />
+            <Router />
+          </WouterRouter>
+          <WhatsAppButton />
+          <InstallPrompt />
+          <Toaster />
+        </TooltipProvider>
+      </WishlistProvider>
     </QueryClientProvider>
   );
 }

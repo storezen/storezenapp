@@ -1,8 +1,10 @@
 import { Link } from 'wouter';
 import { Product } from '../data/products';
 import { motion } from 'framer-motion';
+import { Heart } from 'lucide-react';
 import { StockBadge, getProductMinStock, isProductSoldOut } from './StockBadge';
 import { getProductRating } from '../data/reviews';
+import { useWishlist } from '../hooks/use-wishlist';
 
 interface ProductCardProps {
   product: Product;
@@ -29,6 +31,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const soldOut = isProductSoldOut(product.id);
   const minStock = getProductMinStock(product.id);
   const isLowStock = !soldOut && minStock <= 9;
+  const { isWishlisted, toggle } = useWishlist();
 
   return (
     <motion.div
@@ -39,7 +42,9 @@ export function ProductCard({ product }: ProductCardProps) {
       className={`group relative flex flex-col bg-card border border-card-border rounded-xl overflow-hidden shadow-sm hover:shadow-md ${soldOut ? 'opacity-60' : ''}`}
       data-testid={`card-product-${product.id}`}
     >
-      <Link href={`/product/${product.id}`} className="block relative aspect-square overflow-hidden bg-muted">
+      <div className="block relative aspect-square overflow-hidden bg-muted">
+        <Link href={`/product/${product.id}`} className="absolute inset-0 z-0" />
+
         {/* Sale badge */}
         {discount > 0 && !soldOut && (
           <div className="absolute top-2 left-2 z-10 bg-destructive text-destructive-foreground text-xs font-bold px-2 py-1 rounded-md">
@@ -47,12 +52,26 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* Low Stock badge on image */}
+        {/* Low Stock badge — left side, below sale badge */}
         {isLowStock && (
-          <div className="absolute top-2 right-2 z-10 bg-destructive text-destructive-foreground text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide stock-pulse">
-            Low Stock
+          <div className="absolute top-9 left-2 z-10 bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide stock-pulse">
+            🔥 Low Stock
           </div>
         )}
+
+        {/* Wishlist heart button — top right */}
+        <motion.button
+          onClick={e => { e.preventDefault(); toggle(product.id); }}
+          whileTap={{ scale: 1.35 }}
+          className="absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm border border-border/30 hover:bg-background transition-colors"
+          aria-label={isWishlisted(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+          data-testid={`btn-wishlist-${product.id}`}
+        >
+          <Heart
+            size={15}
+            className={isWishlisted(product.id) ? 'text-rose-500 fill-rose-500' : 'text-muted-foreground'}
+          />
+        </motion.button>
 
         {/* Sold Out overlay */}
         {soldOut && (
@@ -74,7 +93,7 @@ export function ProductCard({ product }: ProductCardProps) {
           className={`w-full h-full object-cover transition-transform duration-500 ${soldOut ? '' : 'group-hover:scale-105'}`}
           loading="lazy"
         />
-      </Link>
+      </div>
 
       <div className="p-4 flex flex-col flex-grow">
         <Link href={`/product/${product.id}`} className="hover:underline">

@@ -48,9 +48,11 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
   - `storeName`, `whatsappNumber`, `tikTokPixelId`, `deliveryCharge`, `currency`
 - **Products data**: `artifacts/pk-store/src/data/products.ts`
 - **Product images**: `artifacts/pk-store/public/` (tshirt.png, ebook.png, perfume.png, hero.png)
-- **Key components**: `Navbar.tsx`, `ProductCard.tsx`, `CountdownTimer.tsx`, `WhatsAppButton.tsx`, `SizeGuideModal.tsx`, `CODForm.tsx`, `InstallPrompt.tsx`, `SkeletonCard.tsx`
-- **Pages**: Home, Catalog, Contact, ProductDetail, Cart, OrderConfirmation, TrackOrder (all lazy-loaded)
-- **Hooks**: `useSeo.ts` (dynamic meta/OG/Twitter/JSON-LD per page), `use-cart.ts`
+- **Key components**: `Navbar.tsx`, `ProductCard.tsx`, `CountdownTimer.tsx`, `WhatsAppButton.tsx`, `SizeGuideModal.tsx`, `CODForm.tsx`, `InstallPrompt.tsx`, `SkeletonCard.tsx`, `CouponInput.tsx`
+- **Pages**: Home, Catalog, Contact, ProductDetail, Cart, OrderConfirmation, TrackOrder, Wishlist (all lazy-loaded)
+- **Hooks**: `useSeo.ts`, `use-cart.ts`, `use-wishlist.tsx` (React Context — WishlistProvider wraps App)
+- **Wishlist** (`hooks/use-wishlist.tsx`, `pages/Wishlist.tsx`): WishlistProvider Context; heart icon on each ProductCard (top-right), heart toggle in ProductDetail header + "Save to Wishlist" desktop button + mobile heart; Navbar heart icon with rose badge; wishlist page grid with remove/add-to-cart/share-via-WhatsApp; 🔥 Low Stock + 💰 Price Dropped indicators; `pk-wishlist` localStorage key
+- **Coupon System** (`data/coupons.ts`, `components/CouponInput.tsx`): 4 coupons (FIRST10 10%, SAVE200 fixed, FREEDELIVERY, WELCOME15 15% first-order); Cart shows collapsible CouponInput with hint chips; discount row in order summary; appliedCoupon flows into CODForm (WhatsApp msg + discount row); `sw_coupon_uses` localStorage tracking
 - **PWA**: `public/manifest.json`, `public/sw.js` (cache-first images, network-first app), `public/icon-192.svg`, `public/icon-512.svg`
 - **SEO**: `public/robots.txt`, `public/sitemap.xml`, JSON-LD Product schema on ProductDetail
 - **COD Checkout** (`CODForm.tsx`): 20-city dropdown, phone auto-format, localStorage returning-customer pre-fill, free delivery >Rs. 2000, saves full order + navigates to `/order-confirmation`
