@@ -1,7 +1,7 @@
 import { Link } from 'wouter';
 import { Clock, X } from 'lucide-react';
 import { useRecentlyViewed } from '../hooks/use-recently-viewed';
-import { products } from '../data/products';
+import { useProducts } from '../hooks/use-products';
 
 interface RecentlyViewedProps {
   title?:     string;
@@ -15,6 +15,7 @@ export function RecentlyViewed({
   excludeId,
 }: RecentlyViewedProps) {
   const { ids, clearAll } = useRecentlyViewed();
+  const products = useProducts();
 
   const viewed = ids
     .filter(id => id !== excludeId)

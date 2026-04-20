@@ -3,6 +3,7 @@ import {
   ShieldCheck, LogOut, Search, Download, Package, TrendingUp,
   Clock, AlertCircle, MessageCircle, Copy, ChevronDown, Eye,
   Check, RefreshCw, Filter, BarChart3, Truck, CheckCircle2, XCircle,
+  ShoppingBag,
 } from 'lucide-react';
 import { STORE_CONFIG } from '../config';
 import {
@@ -10,6 +11,7 @@ import {
   type StoredOrder, type OrderStatus,
 } from '../lib/orders';
 import { getWhatsAppTemplate } from '../lib/orders';
+import { AdminProducts } from '../components/admin/AdminProducts';
 
 const ADMIN_AUTH_KEY = 'sw_admin_auth';
 
@@ -280,6 +282,7 @@ function MobileOrderCard({ order, onStatusChange, onCopy, onWhatsApp }: {
 /* ── Main Admin Dashboard ────────────────────────────────────────────── */
 export default function Admin() {
   const [authed, setAuthed] = useState(() => localStorage.getItem(ADMIN_AUTH_KEY) === 'true');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products'>('orders');
   const [orders, setOrders]   = useState<StoredOrder[]>([]);
   const [search, setSearch]   = useState('');
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
@@ -349,17 +352,40 @@ export default function Admin() {
           </div>
           <div>
             <h1 className="font-black text-sm leading-none">SmartWear <span className="text-rose-400">Admin</span></h1>
-            <p className="text-gray-600 text-[10px]">Order Management</p>
+            <p className="text-gray-600 text-[10px]">Dashboard</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Tabs */}
+        <div className="hidden sm:flex items-center bg-[#0d0d1a] rounded-xl border border-gray-800 p-1 gap-1">
           <button
-            onClick={() => exportCSV(filtered)}
-            className="hidden sm:flex items-center gap-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition-colors"
-            data-testid="button-export-csv"
+            onClick={() => setActiveTab('orders')}
+            data-testid="tab-orders"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
+              ${activeTab === 'orders' ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
           >
-            <Download size={13} /> Export CSV
+            <ShoppingBag size={12} /> Orders
           </button>
+          <button
+            onClick={() => setActiveTab('products')}
+            data-testid="tab-products"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
+              ${activeTab === 'products' ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            <Package size={12} /> Products
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {activeTab === 'orders' && (
+            <button
+              onClick={() => exportCSV(filtered)}
+              className="hidden sm:flex items-center gap-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg transition-colors"
+              data-testid="button-export-csv"
+            >
+              <Download size={13} /> Export Orders
+            </button>
+          )}
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 text-xs bg-rose-900/40 hover:bg-rose-800/50 text-rose-300 px-3 py-2 rounded-lg transition-colors"
@@ -370,7 +396,29 @@ export default function Admin() {
         </div>
       </header>
 
+      {/* Mobile Tabs */}
+      <div className="sm:hidden flex items-center bg-[#111118] border-b border-gray-800 px-4 py-2 gap-2">
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-colors
+            ${activeTab === 'orders' ? 'bg-rose-500/20 text-rose-300' : 'text-gray-600'}`}
+        >
+          <ShoppingBag size={12} /> Orders
+        </button>
+        <button
+          onClick={() => setActiveTab('products')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-colors
+            ${activeTab === 'products' ? 'bg-rose-500/20 text-rose-300' : 'text-gray-600'}`}
+        >
+          <Package size={12} /> Products
+        </button>
+      </div>
+
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+      {activeTab === 'products' && <AdminProducts />}
+
+      {activeTab === 'orders' && (<div className="space-y-6">
 
         {/* ── Overview Cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -572,6 +620,8 @@ export default function Admin() {
 
         {/* ── Bottom padding ── */}
         <div className="h-8" />
+      </div>)}
+
       </main>
     </div>
   );

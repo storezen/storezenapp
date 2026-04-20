@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Truck, ShieldCheck, Tag, ArrowRight } from 'lucide-react';
-import { products } from '../data/products';
+import { useProducts } from '../hooks/use-products';
 import { ProductCard } from '../components/ProductCard';
 import { Navbar } from '../components/Navbar';
 import { CountdownTimer } from '../components/CountdownTimer';
@@ -39,6 +39,7 @@ const categoryCards = [
 ];
 
 export default function Home() {
+  const products = useProducts();
   const [activeCategory, setActiveCategory] = useState("All");
   const [, setLocation] = useLocation();
 

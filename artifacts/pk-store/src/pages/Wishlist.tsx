@@ -3,13 +3,14 @@ import { Heart, Trash2, ShoppingBag, ArrowLeft, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWishlist } from '../hooks/use-wishlist';
 import { useCart } from '../hooks/use-cart';
-import { products } from '../data/products';
+import { useProducts } from '../hooks/use-products';
 import { STORE_CONFIG } from '../config';
 import { getProductMinStock, isProductSoldOut } from '../components/StockBadge';
 import { useToast } from '../hooks/use-toast';
 import { Navbar } from '../components/Navbar';
 
 export default function Wishlist() {
+  const products = useProducts();
   const [, setLocation] = useLocation();
   const { ids, remove, count } = useWishlist();
   const { addToCart } = useCart();

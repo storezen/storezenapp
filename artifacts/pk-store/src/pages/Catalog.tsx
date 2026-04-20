@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
-import { products } from '../data/products';
+import { useProducts } from '../hooks/use-products';
 import { ProductCard } from '../components/ProductCard';
 import { Navbar } from '../components/Navbar';
 import { CountdownTimer } from '../components/CountdownTimer';
@@ -14,6 +14,7 @@ const categories = ['All', 'Clothing', 'Digital', 'Beauty'];
 export default function Catalog() {
   useSeo({ title: `Shop All Products — SmartWear`, description: 'Browse our full collection of clothing, digital products, beauty & more. Cash on Delivery Pakistan.' });
 
+  const products = useProducts();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [sort, setSort] = useState<SortOption>('featured');

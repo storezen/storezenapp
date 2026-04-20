@@ -12,6 +12,8 @@ export type Product = {
     colors?: string[];
     options?: { name: string; price: number }[];
   };
+  stock?: number;
+  status?: 'active' | 'draft';
 };
 
 export const products: Product[] = [
@@ -32,7 +34,9 @@ export const products: Product[] = [
     variants: {
       sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
       colors: ["Black", "White"]
-    }
+    },
+    stock: 50,
+    status: 'active',
   },
   {
     id: "ebook-1",
@@ -52,7 +56,9 @@ export const products: Product[] = [
         { name: "EPUB", price: 299 },
         { name: "Both Formats", price: 449 }
       ]
-    }
+    },
+    stock: 999,
+    status: 'active',
   },
   {
     id: "perfume-1",
@@ -67,6 +73,8 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1541643600914-78b084683702?w=800&q=80",
       "https://images.unsplash.com/photo-1619994403073-2cec844b8e63?w=800&q=80",
       "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&q=80",
-    ]
+    ],
+    stock: 20,
+    status: 'active',
   }
 ];

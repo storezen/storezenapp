@@ -1,6 +1,7 @@
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
-import { products, Product } from '../data/products';
+import { Product } from '../data/products';
+import { useProducts } from '../hooks/use-products';
 import { ArrowRight } from 'lucide-react';
 
 interface RelatedProductsProps {
@@ -9,6 +10,7 @@ interface RelatedProductsProps {
 }
 
 export function RelatedProducts({ currentProductId, category }: RelatedProductsProps) {
+  const products = useProducts();
   const related = products.filter(
     p => p.id !== currentProductId && (p.category === category || Math.random() > 0.5)
   ).slice(0, 3);

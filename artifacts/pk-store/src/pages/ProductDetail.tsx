@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { ArrowLeft, Check, ShieldCheck, Truck, Clock, ShoppingBag, Heart, RotateCcw } from 'lucide-react';
-import { products } from '../data/products';
+import { useProducts } from '../hooks/use-products';
 import { STORE_CONFIG } from '../config';
 import { useCart } from '../hooks/use-cart';
 import { useWishlist } from '../hooks/use-wishlist';
@@ -35,6 +35,7 @@ function StarRatingDisplay({ avg, count }: { avg: number; count: number }) {
 }
 
 export default function ProductDetail() {
+  const products = useProducts();
   const [match, params] = useRoute('/product/:id');
   const [, setLocation] = useLocation();
   const { addToCart, cartCount } = useCart();
