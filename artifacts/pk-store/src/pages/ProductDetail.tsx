@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { ArrowLeft, Check, ShieldCheck, Truck, Clock, ShoppingBag, Heart } from 'lucide-react';
+import { ArrowLeft, Check, ShieldCheck, Truck, Clock, ShoppingBag, Heart, RotateCcw } from 'lucide-react';
 import { products } from '../data/products';
 import { STORE_CONFIG } from '../config';
 import { useCart } from '../hooks/use-cart';
@@ -304,18 +304,36 @@ export default function ProductDetail() {
           </div>
 
           {/* Trust Row */}
-          <div className="grid grid-cols-3 gap-3 mb-7 bg-muted/40 p-4 rounded-xl border border-border/50">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7 bg-muted/40 p-4 rounded-xl border border-border/50">
             {[
-              { icon: Truck, title: 'Free Delivery', sub: 'Orders > Rs.3000' },
-              { icon: ShieldCheck, title: '100% Authentic', sub: 'Quality guaranteed' },
-              { icon: Clock, title: 'Fast Shipping', sub: '2-4 working days' },
-            ].map(({ icon: Icon, title, sub }) => (
-              <div key={title} className="flex flex-col items-center text-center gap-1">
-                <Icon size={18} className="text-primary" />
-                <p className="font-bold text-xs leading-none">{title}</p>
-                <p className="text-muted-foreground text-[10px] leading-tight">{sub}</p>
-              </div>
-            ))}
+              { icon: Truck,      title: 'Free Delivery',  sub: 'Orders > Rs.2000', href: undefined },
+              { icon: ShieldCheck,title: '100% Authentic', sub: 'Quality guaranteed', href: undefined },
+              { icon: Clock,      title: 'Fast Shipping',  sub: '2-4 working days',  href: undefined },
+              { icon: RotateCcw,  title: 'Easy Returns',   sub: '7-day return policy', href: '/return-policy' },
+            ].map(({ icon: Icon, title, sub, href }) => {
+              const inner = (
+                <>
+                  <Icon size={18} className="text-primary" />
+                  <p className="font-bold text-xs leading-none">{title}</p>
+                  <p className="text-muted-foreground text-[10px] leading-tight">{sub}</p>
+                </>
+              );
+              return href ? (
+                <button
+                  key={title}
+                  onClick={() => setLocation(href)}
+                  className="flex flex-col items-center text-center gap-1 hover:opacity-80 transition-opacity underline-offset-2 group"
+                  data-testid="button-return-policy-badge"
+                >
+                  {inner}
+                  <span className="text-[9px] text-primary font-bold group-hover:underline">Learn more →</span>
+                </button>
+              ) : (
+                <div key={title} className="flex flex-col items-center text-center gap-1">
+                  {inner}
+                </div>
+              );
+            })}
           </div>
 
           {/* Desktop Buttons */}

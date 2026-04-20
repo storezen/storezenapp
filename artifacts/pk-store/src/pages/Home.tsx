@@ -238,6 +238,7 @@ export default function Home() {
                 <button onClick={() => setLocation('/')} className="text-left hover:text-primary transition-colors">Home</button>
                 <button onClick={() => setLocation('/catalog')} className="text-left hover:text-primary transition-colors">Catalog</button>
                 <button onClick={() => setLocation('/contact')} className="text-left hover:text-primary transition-colors">Contact</button>
+                <button onClick={() => setLocation('/return-policy')} className="text-left hover:text-primary transition-colors">Return Policy</button>
               </div>
             </div>
             <div>
