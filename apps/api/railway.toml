@@ -1,5 +1,10 @@
+# If you point Railway Root Directory at `apps/api` only, use Railpack with a
+# monorepo-aware build. Prefer the repo-root `railway.toml` + `Dockerfile.api`
+# so `pnpm install` sees the full workspace.
+
 [build]
-builder = "nixpacks"
+builder = "RAILPACK"
+buildCommand = "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build"
 
 [deploy]
-startCommand = "node dist/index.js"
+startCommand = "node dist/index.mjs"

@@ -19,54 +19,19 @@ This repository is organized as a `pnpm` workspace with clear separation between
 
 See `docs/FOLDER_STRUCTURE.md` for the standard folder blueprint to follow in future work.
 
-## Production (Vercel + Postgres SQL)
+## Production (Vercel + Railway)
 
-### 1) Provision a Postgres database
+Follow **`docs/deploy/VERCEL_AND_RAILWAY.md`** for creating four deployments (web, dashboard, admin on Vercel; API on Railway) with the correct monorepo **Root Directory** and env vars. Variable reference and smoke tests stay in **`DEPLOYMENT.md`**.
 
-Use either:
-- **Vercel Postgres** (recommended if you want everything inside Vercel), or
-- **Neon/Supabase** (also works perfectly)
+## Database and migrations
 
-You will get a `DATABASE_URL`.
+Provision Postgres (Neon, Supabase, or Vercel Postgres), set `DATABASE_URL` on the API host (Railway), then run migrations from your machine. Copy **`DEPLOYMENT.md`** for the full variable list and verification steps.
 
-### 2) Set environment variables (Vercel)
+- Generate SQL: `DATABASE_URL="postgresql://..." pnpm --filter @workspace/api-server run db:generate`
+- Apply migrations: `DATABASE_URL="postgresql://..." pnpm --filter @workspace/api-server run db:migrate`
+- Shortcuts: `make db-generate`, `make db-migrate`, `make db-reset` (see `scripts/db.sh`)
 
-Set these **in the Vercel dashboard** (don’t commit them):
-- **API** (`apps/api`)
-  - `DATABASE_URL`
-- **Web** (`apps/web`)
-  - `API_URL` (optional for dev proxy; production web can call your API domain directly if needed)
-
-There is a template at `.env.example`.
-
-### 3) Run migrations
-
-From local machine (or CI), using the API app schema:
-- Generate SQL migrations:
-  - `DATABASE_URL="postgresql://..." pnpm --filter @workspace/api-server run db:generate`
-- Apply migrations:
-  - `DATABASE_URL="postgresql://..." pnpm --filter @workspace/api-server run db:migrate`
-
-### 3.1) Verify DB setup (recommended)
-
-- Check API health (no DB dependency):
-  - `curl http://localhost:8080/api/healthz`
-- Check DB-backed endpoint (requires valid `DATABASE_URL`):
-  - `curl http://localhost:8080/api/products`
-- Expected behavior:
-  - with DB configured: endpoint responds with JSON data
-  - without DB configured: endpoint returns `500` with clear DB env error
-
-### 3.2) Shortcut commands (Makefile + db script)
-
-- Generate migration:
-  - `make db-generate`
-- Apply migration:
-  - `make db-migrate`
-- Recreate migration folder from current schema:
-  - `make db-reset`
-
-These commands call `scripts/db.sh`, which automatically reads `.env` and validates `DATABASE_URL`.
+Templates: `.env.example` and per-app `apps/*/.env.example`.
 
 ## Branch Protection (recommended)
 
@@ -80,13 +45,3 @@ For `main` branch in GitHub settings:
 - Require branches to be up to date before merging
 - Restrict force pushes
 - Restrict deletions
-
-### 4) Deploy
-
-Create **two Vercel projects**:
-- **Web project**
-  - Root Directory: `apps/web`
-  - Output: `dist/public` (already configured via `apps/web/vercel.json`)
-- **API project**
-  - Root Directory: `apps/api`
-  - Routes: handled via `apps/api/vercel.json` (serverless Express handler)

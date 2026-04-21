@@ -1,5 +1,7 @@
 # Deployment Guide
 
+Step-by-step UI settings (Vercel monorepo roots, Railway Docker) live in **[docs/deploy/VERCEL_AND_RAILWAY.md](./docs/deploy/VERCEL_AND_RAILWAY.md)**.
+
 ## 1) Neon DB setup + connection string
 
 1. Create a new project in [Neon](https://neon.tech/).
@@ -11,7 +13,7 @@
 
 1. In Vercel, create a new project from this repository.
 2. Set Root Directory to `apps/web`.
-3. Vercel should detect framework from `apps/web/vercel.json` (`vite`).
+3. Vercel reads `apps/web/vercel.json` (Vite) and runs a monorepo-aware `installCommand` from the repo root.
 4. Add environment variables:
    - `VITE_API_URL=https://api.storepk.com`
    - `VITE_DEFAULT_STORE=demo` (or your store slug)
@@ -37,9 +39,11 @@
 
 ## 5) Railway deploy API + env vars
 
+**Recommended (Docker, full workspace):**
+
 1. Create a new Railway project from this repository.
-2. Set service Root Directory to `apps/api`.
-3. Railway will use `apps/api/railway.toml`.
+2. Set the service **Root Directory** to the **repository root** (`.` / empty), not `apps/api`, so `Dockerfile.api` can copy the whole monorepo.
+3. Railway uses the root [`railway.toml`](./railway.toml) → [`Dockerfile.api`](./Dockerfile.api) build.
 4. Add all required API env vars:
    - `DATABASE_URL`
    - `JWT_SECRET`
@@ -53,6 +57,8 @@
    - `GEMINI_API_KEY`
    - `PORT=3000`
 5. Deploy.
+
+**Alternate:** set Root Directory to `apps/api` and use [`apps/api/railway.toml`](./apps/api/railway.toml) (Railpack + monorepo `buildCommand`) if you do not want a Docker build.
 
 ## 6) Run migrations
 
