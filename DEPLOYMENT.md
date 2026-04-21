@@ -16,7 +16,7 @@ Step-by-step UI settings (Vercel monorepo roots, Railway Docker) live in **[docs
 3. Vercel reads `apps/web/vercel.json` (Vite) and runs a monorepo-aware `installCommand` from the repo root.
 4. Add environment variables:
    - `VITE_API_URL=https://api.storepk.com`
-   - `VITE_DEFAULT_STORE=zorvik` (or your store slug)
+   - `VITE_DEFAULT_STORE_SLUG=zorvik` (or your store slug)
 5. Deploy.
 
 ## 3) Vercel deploy dashboard + env vars

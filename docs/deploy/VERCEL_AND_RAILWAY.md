@@ -51,7 +51,7 @@ pnpm db:seed
 | Name | Value |
 | --- | --- |
 | `VITE_API_URL` | `https://<your-railway-api-host>` |
-| `VITE_DEFAULT_STORE` | your store slug, e.g. `zorvik` |
+| `VITE_DEFAULT_STORE_SLUG` | your store slug, e.g. `zorvik` |
 
 5. Deploy.
 
