@@ -4,6 +4,14 @@ Store platform codebase: `pnpm` workspace with apps, shared packages, and script
 
 **Maintainer:** Hassan Arif ([@hassanarif426](https://github.com/hassanarif426)). See [`AUTHORS.md`](./AUTHORS.md) for attribution and Git setup.
 
+## Security, license, and contributions
+
+- **[SECURITY.md](./SECURITY.md)** — reporting vulnerabilities, secrets handling, production hardening.
+- **[LICENSE](./LICENSE)** — MIT.
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** — PR expectations and checks.
+
+Dependabot is enabled for **npm** and **GitHub Actions** (see [`.github/dependabot.yml`](./.github/dependabot.yml)). Enable **private vulnerability reporting** on the GitHub repo (**Settings → Security → Code security**) for a professional disclosure workflow.
+
 ## Quick Start
 
 - Use Node.js `24.x`

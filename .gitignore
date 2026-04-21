@@ -31,12 +31,17 @@ testem.log
 
 # --- Environment (secrets) — templates stay in repo ---
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
 !.env.example
 !**/.env.example
+.envrc
+.direnv/
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+*.secret
 
 # --- OS / editor ---
 .DS_Store
@@ -62,7 +67,6 @@ Thumbs.db
 /libpeerconnection.log
 /typings
 tmp/
-*.pem
 
 # Local-only editor / environment files (optional)
 .replit
@@ -84,3 +88,11 @@ attached_assets/
 
 # Archives / dumps
 *.tar.gz
+
+# Playwright / e2e artifacts (if added later)
+playwright-report/
+test-results/
+blob-report/
+
+# OS metadata (Windows)
+Desktop.ini
