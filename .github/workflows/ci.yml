@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: ["typecheck", "build", "test", "db-migration-check"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --store-dir .pnpm-store/v10 --frozen-lockfile
+
+      - name: Typecheck
+        if: matrix.check == 'typecheck'
+        run: pnpm -w run typecheck
+
+      - name: Build
+        if: matrix.check == 'build'
+        run: pnpm -w run build
+
+      - name: Run tests
+        if: matrix.check == 'test'
+        run: pnpm -r --if-present run test
+
+      - name: Check Drizzle migration generation is up-to-date
+        if: matrix.check == 'db-migration-check'
+        env:
+          DATABASE_URL: postgresql://USER:PASSWORD@HOST:5432/DB?sslmode=require
+        run: |
+          pnpm --filter @workspace/api-server run db:generate
+          git diff --exit-code -- apps/api/drizzle
+

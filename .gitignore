@@ -45,5 +45,22 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 # Replit
+.replit
+.replitignore
 .cache/
 .local/
+
+# local package store
+.pnpm-store/
+
+# local environment secrets
+.env
+
+# Cursor/agent tooling (keep repo clean)
+.agents/
+
+# Replit artifact metadata
+.replit-artifact/
+
+# Local exports / archives
+*.tar.gz
