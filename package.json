@@ -2,6 +2,11 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "author": "Hassan Arif <https://github.com/hassanarif426>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hassanarif426/zorvik.git"
+  },
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",

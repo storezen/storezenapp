@@ -1,6 +1,8 @@
-# Shopify Pixel Tool Monorepo
+# Zorvik monorepo
 
-This repository is organized as a `pnpm` workspace with clear separation between apps, shared libraries, and automation scripts.
+Store platform codebase: `pnpm` workspace with apps, shared packages, and scripts.
+
+**Maintainer:** Hassan Arif ([@hassanarif426](https://github.com/hassanarif426)). See [`AUTHORS.md`](./AUTHORS.md) for attribution and Git setup.
 
 ## Quick Start
 

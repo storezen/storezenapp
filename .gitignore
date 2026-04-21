@@ -64,7 +64,7 @@ Thumbs.db
 tmp/
 *.pem
 
-# Replit / local tooling
+# Local-only editor / environment files (optional)
 .replit
 .replitignore
 .cache/
@@ -74,7 +74,7 @@ tmp/
 # pnpm store (local mirror)
 .pnpm-store/
 
-# Cursor / agent scratch (not source)
+# IDE scratch and local asset dumps (not source)
 .agents/
 attached_assets/
 
