@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { storeFromHostMiddleware } from "../middlewares/storeFromHost";
 import healthRouter from "./health.js";
 import collectionsRouter from "./collections.js";
 import productsRouter from "./products.js";
@@ -14,6 +15,8 @@ import refRouter from "./ref.js";
 import aiRouter from "./ai.js";
 
 const router: IRouter = Router();
+
+router.use(storeFromHostMiddleware);
 
 router.use(healthRouter);
 router.use(authRouter);

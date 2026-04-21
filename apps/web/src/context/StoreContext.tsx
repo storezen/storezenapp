@@ -1,5 +1,6 @@
 import { createContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { API_URL, DEFAULT_STORE_SLUG } from "@/config";
+import { API_URL } from "@/config";
+import { useStoreSlug } from "@/hooks/use-store-slug";
 
 type StoreData = {
   id: string;
@@ -24,21 +25,11 @@ type StoreContextValue = {
 
 export const StoreContext = createContext<StoreContextValue | undefined>(undefined);
 
-function detectStoreSlug() {
-  if (typeof window === "undefined") return DEFAULT_STORE_SLUG;
-  const host = window.location.hostname;
-  if (!host) return DEFAULT_STORE_SLUG;
-
-  const parts = host.split(".");
-  if (parts.length >= 3) return parts[0];
-  return DEFAULT_STORE_SLUG;
-}
-
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const storeSlug = useStoreSlug();
   const [store, setStore] = useState<StoreData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [storeSlug] = useState(() => detectStoreSlug());
 
   useEffect(() => {
     let mounted = true;
@@ -79,4 +70,3 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
-

@@ -3,6 +3,7 @@ import App from "./App";
 import "./index.css";
 import { StoreProvider } from "./context/StoreContext";
 
+/* StoreProvider resolves tenant from subdomain (see hooks/use-store-slug) and loads /stores/:slug. */
 createRoot(document.getElementById("root")!).render(
   <StoreProvider>
     <App />
