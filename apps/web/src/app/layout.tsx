@@ -1,28 +1,34 @@
-"use client";
-
 import "./globals.css";
-import { AuthProvider } from "@/hooks/use-auth";
-import { CartProvider } from "@/hooks/use-cart";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { WHATSAPP } from "@/lib/constants";
+import "@/styles/design-system.css";
+import { Poppins, Inter, Noto_Nastaliq_Urdu } from "next/font/google";
+import { Providers } from "@/app/providers";
+import { SiteChrome } from "@/components/SiteChrome";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-poppins",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+});
+
+const urdu = Noto_Nastaliq_Urdu({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-urdu",
+});
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <AuthProvider>
-          <CartProvider>
-            <Navbar />
-            <main className="mx-auto min-h-[75vh] max-w-6xl px-4 py-6">{children}</main>
-            <Footer />
-            {WHATSAPP && (
-              <a href={`https://wa.me/${WHATSAPP}`} className="fixed bottom-4 right-4 rounded-full bg-green-500 px-4 py-3 text-white">
-                WhatsApp
-              </a>
-            )}
-          </CartProvider>
-        </AuthProvider>
+      <body className={`${poppins.variable} ${inter.variable} ${urdu.variable}`}>
+        <Providers>
+          <SiteChrome>{children}</SiteChrome>
+        </Providers>
       </body>
     </html>
   );

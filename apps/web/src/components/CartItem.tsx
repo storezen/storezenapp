@@ -4,16 +4,17 @@ import { formatCurrency } from "@/lib/utils";
 
 export function CartItem({ item, onPlus, onMinus, onRemove }: { item: Item; onPlus: () => void; onMinus: () => void; onRemove: () => void }) {
   return (
-    <div className="flex items-center justify-between rounded border p-3">
+    <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 shadow-card">
       <div>
-        <p className="font-medium">{item.name}</p>
+        <p className="font-semibold text-gray-900">{item.name}</p>
         <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
+        <span className="mt-1 inline-block rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">COD Available</span>
       </div>
       <div className="flex items-center gap-2">
-        <Button onClick={onMinus}>-</Button>
+        <Button size="sm" variant="secondary" onClick={onMinus}>-</Button>
         <span>{item.qty}</span>
-        <Button onClick={onPlus}>+</Button>
-        <Button className="bg-red-600" onClick={onRemove}>Remove</Button>
+        <Button size="sm" variant="secondary" onClick={onPlus}>+</Button>
+        <Button size="sm" className="bg-error hover:bg-error" onClick={onRemove}>Remove</Button>
       </div>
     </div>
   );
