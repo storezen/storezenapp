@@ -1,0 +1,10 @@
+# Storefront (Vite) — package name `@workspace/pk-store` in `apps/web`.
+# Set Railway **Root directory** to `apps/web` (this repo has no `apps/pk-store` folder).
+
+[build]
+builder = "RAILPACK"
+buildCommand = "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install && pnpm --filter @workspace/pk-store build"
+
+[deploy]
+startCommand = "cd ../.. && pnpm --filter @workspace/pk-store start"
+healthcheckPath = "/"

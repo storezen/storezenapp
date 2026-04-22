@@ -22,7 +22,9 @@ Shorter UI-focused notes: [docs/deploy/VERCEL_AND_RAILWAY.md](./docs/deploy/VERC
 4. Set **Variables** (see [Environment variables](#environment-variables)).
 5. Deploy and copy the public URL (e.g. `https://<service>.up.railway.app`). Your frontends need the **API base including `/api`** (Express mounts the router at `/api`), e.g. `https://<service>.up.railway.app/api`.
 
-**Alternate (Nixpacks, service root `apps/api`):** configure the service **Root Directory** to `apps/api` and use [`apps/api/railway.toml`](./apps/api/railway.toml). The file runs a monorepo-aware `buildCommand` from the parent directory and starts `node --enable-source-maps dist/index.mjs`.
+**Alternate (Railpack, service root `apps/api`):** set **Root Directory** to `apps/api` and use [`apps/api/railway.toml`](./apps/api/railway.toml) (monorepo `cd ../.. && pnpm install && pnpm --filter …`).
+
+**Multiple Railway services (same repo):** add one service per app and set **Root Directory** to `apps/api`, `apps/web`, `apps/dashboard`, or `apps/admin`. Each app has a `railway.toml` with `cd ../..` so **pnpm workspace** resolves from the repo root. Set env vars per service (only the API needs `DATABASE_URL`, etc.).
 
 ---
 

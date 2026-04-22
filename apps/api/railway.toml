@@ -1,10 +1,10 @@
-# Alternate API deploy: Railway Root Directory = `apps/api`.
-# Recommended production path: repo root + root `railway.toml` + `Dockerfile.api`
-# (full pnpm workspace). See DEPLOYMENT.md.
+# Monorepo API — Railway **Root directory** = `apps/api`
+# Alternative to repo-root Docker deploy (`/railway.toml` + `Dockerfile.api`).
 
 [build]
-builder = "nixpacks"
-buildCommand = "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build"
+builder = "RAILPACK"
+buildCommand = "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install && pnpm --filter @workspace/api-server build"
 
 [deploy]
-startCommand = "node --enable-source-maps dist/index.mjs"
+startCommand = "cd ../.. && pnpm --filter @workspace/api-server start"
+healthcheckPath = "/api/healthz"
