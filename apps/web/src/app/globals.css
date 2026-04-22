@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap");
+
 body {
   margin: 0;
-  background: var(--color-white);
-  color: var(--color-gray-900);
+  background: #ffffff;
+  color: #1a1a1a;
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
@@ -19,8 +21,8 @@ body {
 
 .gradient-hero {
   background:
-    linear-gradient(rgba(8, 28, 21, 0.6), rgba(8, 28, 21, 0.55)),
-    linear-gradient(140deg, rgba(27, 67, 50, 0.95), rgba(8, 28, 21, 0.95));
+    linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.6)),
+    linear-gradient(140deg, rgba(18, 18, 18, 0.95), rgba(0, 0, 0, 0.95));
 }
 
 .transition-smooth {
@@ -43,6 +45,11 @@ body {
 
 .safe-bottom {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+}
+
+.section-title {
+  font-family: var(--font-poppins), sans-serif;
+  font-weight: 700;
 }
 
 @media (min-width: 768px) {

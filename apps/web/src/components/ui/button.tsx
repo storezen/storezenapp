@@ -10,8 +10,8 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:bg-accent-dark active:scale-[0.98] shadow-sm",
-  secondary: "border-2 border-primary bg-white text-primary hover:bg-primary hover:text-white",
+  primary: "bg-primary text-white hover:bg-primary-hover active:scale-[0.98]",
+  secondary: "border border-white bg-transparent text-white hover:bg-white hover:text-black",
   ghost: "bg-transparent text-primary hover:underline",
   whatsapp: "bg-whatsapp text-white hover:brightness-95 shadow-md",
 };

@@ -5,16 +5,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          DEFAULT: "var(--color-primary)",
-          light: "var(--color-primary-light)",
-          dark: "var(--color-primary-dark)",
-        },
-        accent: {
-          DEFAULT: "var(--color-accent)",
-          light: "var(--color-accent-light)",
-          dark: "var(--color-accent-dark)",
-        },
+        primary: "#000000",
+        "primary-hover": "#1a1a1a",
+        secondary: "#666666",
+        accent: "#cc0000",
+        border: "#e5e5e5",
+        whatsapp: "#25D366",
+        hover: "#f5f5f5",
         gray: {
           50: "var(--color-gray-50)",
           100: "var(--color-gray-100)",
@@ -27,11 +24,10 @@ const config: Config = {
           800: "var(--color-gray-800)",
           900: "var(--color-gray-900)",
         },
-        success: "var(--color-success)",
+        success: "#137333",
         warning: "var(--color-warning)",
-        error: "var(--color-error)",
+        error: "#cc0000",
         info: "var(--color-info)",
-        whatsapp: "var(--color-whatsapp)",
         jazzcash: "var(--color-jazzcash)",
         easypaisa: "var(--color-easypaisa)",
       },

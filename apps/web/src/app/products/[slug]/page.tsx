@@ -15,6 +15,10 @@ export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState("");
+  const [activeImage, setActiveImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [qty, setQty] = useState(1);
+  const [openDesc, setOpenDesc] = useState(true);
   const { addItem } = useCart();
   const storeSlug = process.env.NEXT_PUBLIC_STORE_SLUG || "demo";
 
@@ -33,6 +37,19 @@ export default function ProductDetailPage() {
   if (error) return <p className="text-red-600">{error}</p>;
   if (!product) return <p>Loading...</p>;
   const productPrice = product.sale_price || product.price;
+  const hasSale = Boolean(product.sale_price && product.sale_price < product.price);
+  const saveAmount = hasSale ? product.price - productPrice : 0;
+  const images = product.images?.length ? product.images : ["https://placehold.co/1000x1000?text=Product"];
+
+  function handleAddToCart() {
+    addItem({
+      product_id: product.id,
+      name: product.name,
+      price: productPrice,
+      qty,
+      image: images[activeImage] || "",
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -42,69 +59,82 @@ export default function ProductDetailPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
       <div className="space-y-3">
-        <div className="overflow-hidden rounded-lg bg-gray-100">
+        <button className="block w-full overflow-hidden rounded-md bg-gray-100" onClick={() => setLightboxOpen(true)}>
           <img
-            src={product.images?.[0] || "https://placehold.co/900x900?text=Product"}
+            src={images[activeImage]}
             alt={product.name}
             className="aspect-square w-full object-cover"
           />
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="aspect-square rounded-md bg-gray-100" />
+        </button>
+        <div className="flex gap-2 overflow-x-auto">
+          {images.map((img, idx) => (
+            <button
+              key={`${img}-${idx}`}
+              className={`h-20 w-20 shrink-0 overflow-hidden rounded border ${idx === activeImage ? "border-black" : "border-border"}`}
+              onClick={() => setActiveImage(idx)}
+            >
+              <img src={img} alt={`${product.name} ${idx + 1}`} className="h-full w-full object-cover" />
+            </button>
           ))}
         </div>
       </div>
 
       <div className="space-y-4">
-        <span className="inline-block rounded-full bg-primary-light px-2 py-1 text-xs font-semibold text-white">{product.category || "General"}</span>
-        <h1 className="heading-font text-3xl font-bold text-gray-900">{product.name}</h1>
-        <p className="text-sm text-warning">★★★★★ <span className="text-gray-500">(128 reviews)</span></p>
+        <span className="text-xs uppercase tracking-wide text-secondary">{product.category || "General"}</span>
+        <h1 className="section-title text-3xl font-bold text-[#1a1a1a]">{product.name}</h1>
         <div className="flex items-center gap-2">
-          <p className="heading-font text-2xl font-bold text-primary">{formatCurrency(productPrice)}</p>
-          {product.sale_price ? <p className="text-sm text-gray-400 line-through">{formatCurrency(product.price)}</p> : null}
+          <p className="text-2xl font-bold text-black">{formatCurrency(productPrice)}</p>
+          {product.sale_price ? <p className="text-sm text-secondary line-through">{formatCurrency(product.price)}</p> : null}
+          {hasSale ? <p className="text-sm text-accent">Save {formatCurrency(saveAmount)}</p> : null}
         </div>
         <StockBadge stock={product.stock} />
-        <p className="text-sm text-gray-700">{product.description}</p>
 
-        <div className="grid grid-cols-3 gap-2">
-          <button className="rounded-md border border-gray-300 p-2 text-sm">S</button>
-          <button className="rounded-md border border-primary bg-primary text-white p-2 text-sm">M</button>
-          <button className="rounded-md border border-gray-300 p-2 text-sm">L</button>
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-[#1a1a1a]">Select Variant</p>
+          <div className="grid grid-cols-3 gap-2">
+            <button className="rounded-full border border-border p-2 text-sm">S</button>
+            <button className="rounded-full border border-black bg-black p-2 text-sm text-white">M</button>
+            <button className="rounded-full border border-border p-2 text-sm">L</button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="h-10 w-10 rounded border border-gray-300">-</button>
-          <div className="flex h-10 w-12 items-center justify-center rounded border border-gray-300">1</div>
-          <button className="h-10 w-10 rounded border border-gray-300">+</button>
+          <button className="h-10 w-10 rounded border border-border" onClick={() => setQty((q) => Math.max(1, q - 1))}>-</button>
+          <div className="flex h-10 w-12 items-center justify-center rounded border border-border">{qty}</div>
+          <button className="h-10 w-10 rounded border border-border" onClick={() => setQty((q) => q + 1)}>+</button>
         </div>
 
-        <Button size="lg" className="w-full" onClick={() => addItem({ product_id: product.id, name: product.name, price: productPrice, qty: 1, image: product.images?.[0] || "" })}>
+        <Button size="lg" className="w-full" onClick={handleAddToCart}>
           Add to Cart
         </Button>
         <a
           className="flex h-12 w-full items-center justify-center rounded-md bg-whatsapp text-sm font-semibold text-white"
           href={`https://wa.me/${WHATSAPP}?text=I want ${encodeURIComponent(product.name)}`}
         >
-          Buy on WhatsApp
+          WhatsApp Order
         </a>
-        <span className="inline-block rounded-full bg-primary px-2 py-1 text-xs font-semibold text-white">Cash on Delivery Available</span>
-        <p className="text-sm text-gray-600">Delivery in 2-4 days across major Pakistani cities.</p>
+        <span className="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Cash on Delivery Available</span>
+        <p className="text-sm text-secondary">Usually delivers in 2-4 days</p>
       </div>
       </div>
 
-      <div className="rounded-lg border border-gray-200 p-4">
-        <h2 className="heading-font text-lg font-bold text-gray-900">Product Description</h2>
-        <p className="mt-2 text-sm text-gray-700">{product.description || "Premium quality product for everyday use."}</p>
+      <div className="rounded-md border border-border">
+        <button className="flex w-full items-center justify-between px-4 py-3 text-left" onClick={() => setOpenDesc((v) => !v)}>
+          <span className="section-title text-sm font-semibold">Description</span>
+          <span>{openDesc ? "−" : "+"}</span>
+        </button>
+        {openDesc ? <p className="border-t border-border px-4 py-3 text-sm text-secondary">{product.description || "Premium quality product for everyday use."}</p> : null}
       </div>
-      <div className="rounded-lg border border-gray-200 p-4">
-        <h2 className="heading-font text-lg font-bold text-gray-900">Customer Reviews</h2>
-        <p className="mt-2 text-sm text-gray-600">Customer reviews section coming soon.</p>
+
+      <div className="fixed bottom-[68px] left-0 right-0 z-30 border-t border-border bg-white p-3 md:hidden">
+        <Button className="w-full" size="lg" onClick={handleAddToCart}>Add to Cart</Button>
       </div>
-      <div className="rounded-lg border border-gray-200 p-4">
-        <h2 className="heading-font text-lg font-bold text-gray-900">Related Products</h2>
-        <p className="mt-2 text-sm text-gray-600">Explore more products from this category.</p>
-      </div>
+
+      {lightboxOpen ? (
+        <button className="fixed inset-0 z-50 bg-black/85 p-4" onClick={() => setLightboxOpen(false)}>
+          <img src={images[activeImage]} alt={product.name} className="mx-auto h-full max-h-[90vh] w-auto max-w-full object-contain" />
+        </button>
+      ) : null}
     </div>
   );
 }

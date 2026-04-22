@@ -25,17 +25,22 @@ export function CartDrawer({ open, onClose }: Props) {
         className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-xl transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b px-4 py-4">
-            <h2 className="heading-font text-lg font-bold text-gray-900">Your Cart ({itemCount} items)</h2>
+          <div className="flex items-center justify-between border-b border-border px-4 py-4">
+            <h2 className="section-title text-lg font-bold text-[#1a1a1a]">Your Cart</h2>
             <button onClick={onClose} className="text-xl text-gray-700" aria-label="Close">×</button>
           </div>
 
           <div className="flex-1 space-y-3 overflow-auto px-4 py-4">
             {items.length === 0 ? (
-              <p className="text-sm text-gray-600">Your cart is empty.</p>
+              <div className="space-y-3 py-10 text-center">
+                <p className="text-sm text-secondary">Your cart is empty</p>
+                <Link href="/products" onClick={onClose}>
+                  <Button className="w-full">Shop Products</Button>
+                </Link>
+              </div>
             ) : (
               items.map((item) => (
-                <div key={item.product_id} className="rounded-lg border border-gray-200 p-3">
+                <div key={item.product_id} className="rounded-md border border-border p-3">
                   <div className="flex gap-3">
                     <div className="h-14 w-14 overflow-hidden rounded-md bg-gray-100">
                       {item.image ? (
@@ -44,12 +49,12 @@ export function CartDrawer({ open, onClose }: Props) {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="line-clamp-1 text-sm font-semibold text-gray-900">{item.name}</p>
-                      <p className="text-sm text-primary">{formatCurrency(item.price)}</p>
+                      <p className="text-sm font-semibold text-[#000]">{formatCurrency(item.price)}</p>
                       <div className="mt-2 flex items-center gap-2">
-                        <button className="h-7 w-7 rounded border" onClick={() => updateQty(item.product_id, item.qty - 1)}>-</button>
+                        <button className="h-7 w-7 rounded border border-border" onClick={() => updateQty(item.product_id, item.qty - 1)}>-</button>
                         <span className="text-sm">{item.qty}</span>
-                        <button className="h-7 w-7 rounded border" onClick={() => updateQty(item.product_id, item.qty + 1)}>+</button>
-                        <button className="ml-auto text-xs text-error" onClick={() => removeItem(item.product_id)}>Remove</button>
+                        <button className="h-7 w-7 rounded border border-border" onClick={() => updateQty(item.product_id, item.qty + 1)}>+</button>
+                        <button className="ml-auto text-xs text-accent" onClick={() => removeItem(item.product_id)}>Remove</button>
                       </div>
                     </div>
                   </div>
@@ -58,15 +63,15 @@ export function CartDrawer({ open, onClose }: Props) {
             )}
           </div>
 
-          <div className="space-y-3 border-t bg-gray-50 px-4 py-4">
+          <div className="space-y-3 border-t border-border bg-white px-4 py-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">Subtotal</span>
-              <span className="heading-font font-bold text-gray-900">{formatCurrency(total)}</span>
+              <span className="text-sm text-secondary">Subtotal</span>
+              <span className="section-title font-bold text-[#000]">{formatCurrency(total)}</span>
             </div>
             <Link href="/checkout" onClick={onClose}>
-              <Button className="w-full" size="lg">Proceed to Checkout</Button>
+              <Button className="w-full" size="lg">Checkout</Button>
             </Link>
-            <button onClick={onClose} className="w-full text-sm text-primary hover:underline">
+            <button onClick={onClose} className="w-full text-sm text-secondary hover:underline">
               Continue shopping
             </button>
           </div>

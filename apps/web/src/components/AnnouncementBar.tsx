@@ -3,7 +3,7 @@
 export function AnnouncementBar() {
   return (
     <div className="bg-primary px-4 py-2 text-center text-xs font-medium text-white md:text-sm">
-      Free delivery on orders above Rs. 1500 🚚
+      Free Delivery on Orders Above Rs. 1500 🚚
     </div>
   );
 }

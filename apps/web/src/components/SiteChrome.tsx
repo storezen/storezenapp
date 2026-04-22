@@ -8,6 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { MobileNav } from "@/components/MobileNav";
 import { CartDrawer } from "@/components/CartDrawer";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const { items } = useCart();
@@ -21,15 +22,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       <main className="shop-container min-h-[75vh] py-6 md:py-8 safe-bottom">{children}</main>
       <Footer />
 
-      {WHATSAPP ? (
-        <a
-          href={`https://wa.me/${WHATSAPP}`}
-          className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-2xl text-white shadow-lg animate-pulseSoft md:bottom-4"
-          aria-label="WhatsApp support"
-        >
-          ✆
-        </a>
-      ) : null}
+      {WHATSAPP ? <WhatsAppButton /> : null}
 
       <MobileNav cartCount={cartCount} onCartOpen={() => setCartOpen(true)} />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
