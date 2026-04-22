@@ -129,6 +129,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@google/generative-ai':
+        specifier: ^0.24.1
+        version: 0.24.1
       '@storepk/ai':
         specifier: workspace:*
         version: link:../../packages/ai

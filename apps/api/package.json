@@ -15,6 +15,7 @@
     "seed:admin": "tsx ./src/scripts/seed-admin.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@storepk/whatsapp": "workspace:*",
     "@storepk/shipping": "workspace:*",
     "@storepk/ai": "workspace:*",
