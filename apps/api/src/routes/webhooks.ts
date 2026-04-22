@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { sendMessage } from "@storepk/whatsapp";
-import { processOrderConfirmationReply } from "../services/orders.service";
+import { normalizePhoneDigits, processOrderConfirmationReply } from "../services/orders.service";
 
 const router = Router();
 
@@ -30,11 +30,12 @@ router.post("/webhooks/whatsapp", async (req, res) => {
       ((payload.data as Record<string, unknown> | undefined)?.body as string | undefined) ??
       "";
 
-    const phone = String(phoneRaw).trim();
+    const phone = String(phoneRaw).trim().split("@")[0]?.trim() ?? "";
     const body = String(bodyRaw).trim();
     if (!phone || !body) return res.status(200).json({ ok: true, skipped: true });
 
-    const result = await processOrderConfirmationReply(phone, body);
+    const phoneForState = normalizePhoneDigits(phone) || phone;
+    const result = await processOrderConfirmationReply(phoneForState, body);
     if (result.invalid && result.storePayload?.whatsappInstanceId && result.storePayload?.whatsappToken) {
       await sendMessage(
         result.orderPayload.customerPhone,

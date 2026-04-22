@@ -13,6 +13,7 @@ import { STORE_CONFIG } from '../config';
 import { useSeo } from '../hooks/useSeo';
 import { CustomersAlsoBought } from '../components/Recommendations';
 import { API_URL } from '../config';
+import { useStore } from '../hooks/use-store';
 
 function toUiOrderStatus(status: string | undefined): OrderStatus {
   if (status === 'new') return 'placed';
@@ -122,7 +123,8 @@ function StatusTracker({ status }: { status: OrderStatus }) {
 
 /* ── Main Page ───────────────────────────────────────────────────────────── */
 export default function OrderConfirmation() {
-  useSeo({ title: 'Order Confirmed — Zorvik' });
+  const { store } = useStore();
+  useSeo({ title: `Order Confirmed — ${store?.name ?? 'Store'}` });
 
   const [, setLocation] = useLocation();
   const [, params] = useRoute('/order-confirmation/:id');
@@ -142,6 +144,10 @@ export default function OrderConfirmation() {
         url.searchParams.set('id', id);
         const resp = await fetch(url.toString());
         const data = await resp.json().catch(() => ({}));
+        if (resp.status === 404) {
+          setNotFound(true);
+          return;
+        }
         if (!resp.ok) throw new Error(data?.error ?? 'Order not found');
         const mapped: StoredOrder = {
           orderId: String(data.id),
@@ -150,13 +156,31 @@ export default function OrderConfirmation() {
           city: String(data.customerCity ?? ''),
           address: String(data.customerAddress ?? ''),
           items: Array.isArray(data.items)
-            ? data.items.map((item: Record<string, unknown>) => ({
-                productId: String(item.productId ?? ''),
-                productName: String(item.name ?? ''),
-                productImage: '/placeholder.svg',
-                price: Number(item.unitPrice ?? 0),
-                quantity: Number(item.quantity ?? 0),
-              }))
+            ? data.items.map((item: Record<string, unknown>) => {
+                const img =
+                  typeof item.productImage === 'string'
+                    ? item.productImage
+                    : typeof item.image === 'string'
+                      ? item.image
+                      : '/placeholder.svg';
+                const rawVar = item.variant;
+                const variant =
+                  rawVar && typeof rawVar === 'object' && !Array.isArray(rawVar)
+                    ? {
+                        size: typeof (rawVar as Record<string, unknown>).size === 'string' ? ((rawVar as Record<string, unknown>).size as string) : undefined,
+                        color: typeof (rawVar as Record<string, unknown>).color === 'string' ? ((rawVar as Record<string, unknown>).color as string) : undefined,
+                        optionName: typeof (rawVar as Record<string, unknown>).optionName === 'string' ? ((rawVar as Record<string, unknown>).optionName as string) : undefined,
+                      }
+                    : undefined;
+                return {
+                  productId: String(item.productId ?? ''),
+                  productName: String(item.name ?? ''),
+                  productImage: img,
+                  price: Number(item.unitPrice ?? 0),
+                  quantity: Number(item.quantity ?? 0),
+                  variant,
+                };
+              })
             : [],
           subtotal: Number(data.subtotal ?? 0),
           deliveryCharge: Number(data.deliveryFee ?? 0),
@@ -185,7 +209,9 @@ export default function OrderConfirmation() {
   const openWhatsAppHelp = () => {
     if (!order) return;
     const msg = encodeURIComponent(`Hi! I need help with my order ${order.orderId}. My name is ${order.name}.`);
-    window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${msg}`, '_blank');
+    const wa =
+      store?.whatsappNumber?.replace(/\D/g, '') ?? STORE_CONFIG.whatsappNumber.replace(/\D/g, '');
+    window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
   };
 
   /* ── Not found ── */

@@ -30,24 +30,25 @@ function buildVars(order: OrderLike, store: StoreLike) {
   };
 }
 
+const uuidRe =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 async function logWhatsapp(
   order: OrderLike,
   store: StoreLike,
-  templateKey: MessageKey,
+  _templateKey: MessageKey,
   phone: string,
   message: string,
   success: boolean,
 ) {
   try {
     const db = getDb();
-    await db.execute(
-      sql`
-        insert into whatsapp_logs
-          (order_id, store_id, phone, template_key, message, provider, success, created_at)
-        values
-          (${order.id}, ${store.id}, ${phone}, ${templateKey}, ${message}, ${"ultramsg"}, ${success}, now())
-      `,
-    );
+    const orderId = order.id && uuidRe.test(order.id) ? order.id : null;
+    const status = success ? "sent" : "failed";
+    await db.execute(sql`
+      insert into whatsapp_logs (id, store_id, order_id, phone, message, status, sent_at)
+      values (gen_random_uuid(), ${store.id}, ${orderId}, ${phone}, ${message}, ${status}, now())
+    `);
   } catch {
     // Do not block messaging flow if logs table is missing/misaligned.
   }

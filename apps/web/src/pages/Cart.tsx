@@ -162,7 +162,7 @@ export default function Cart() {
                   <div className="flex flex-col flex-1">
                     <div className="flex justify-between items-start mb-1">
                       <Link
-                        href={`/product/${item.product.id}`}
+                        href={`/product/${item.product.slug ?? item.product.id}`}
                         className="font-bold hover:underline line-clamp-1"
                       >
                         {item.product.name}

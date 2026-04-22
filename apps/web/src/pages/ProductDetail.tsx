@@ -43,7 +43,7 @@ function StarRatingDisplay({ avg, count }: { avg: number; count: number }) {
 export default function ProductDetail() {
   const [match, params] = useRoute('/product/:slug');
   const [, setLocation] = useLocation();
-  const { storeSlug } = useStore();
+  const { storeSlug, store } = useStore();
   const { addToCart, cartCount } = useCart();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { trackView } = useRecentlyViewed();
@@ -120,8 +120,10 @@ export default function ProductDetail() {
 
   const productSoldOut = product ? isProductSoldOut(product.id) : false;
 
+  const storeDisplayName = store?.name ?? 'Store';
+
   useSeo({
-    title: product ? `${product.name} — Zorvik` : `Product — Zorvik`,
+    title: product ? `${product.name} — ${storeDisplayName}` : `Product — ${storeDisplayName}`,
     description: product?.description?.slice(0, 160),
     image: product?.images?.[0] ?? product?.image,
     type: product ? 'product' : 'website',
@@ -132,7 +134,7 @@ export default function ProductDetail() {
       name: product.name,
       description: product.description,
       image: product.images ?? [product.image],
-      brand: { '@type': 'Brand', name: 'Zorvik' },
+      brand: { '@type': 'Brand', name: storeDisplayName },
       offers: {
         '@type': 'Offer',
         price: product.price,
@@ -140,7 +142,7 @@ export default function ProductDetail() {
         availability: productSoldOut
           ? 'https://schema.org/OutOfStock'
           : 'https://schema.org/InStock',
-        seller: { '@type': 'Organization', name: 'Zorvik' },
+        seller: { '@type': 'Organization', name: storeDisplayName },
       },
     } : undefined,
   });
@@ -200,7 +202,9 @@ export default function ProductDetail() {
       `Hi! I want to order:\n*${product.name}*${variant ? ` (${variant})` : ''}\nQty: ${quantity}\nPrice: Rs. ${currentPrice * quantity}\n\nPlease confirm availability. COD payment.`
     );
     trackContact(product.id);
-    window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${msg}`, '_blank');
+    const wa =
+      store?.whatsappNumber?.replace(/\D/g, '') ?? STORE_CONFIG.whatsappNumber.replace(/\D/g, '');
+    window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
   };
 
   const cartItems = selectedOption

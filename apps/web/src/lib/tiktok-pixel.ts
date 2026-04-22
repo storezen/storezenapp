@@ -45,6 +45,11 @@ function devLog(event: string, params?: Record<string, unknown>) {
 // ─── Init & PageView ───────────────────────────────────────────────────────────
 
 /** Load the pixel script and fire the first PageView. Call once on app mount. */
+function isUsablePixelId(id: string | undefined | null): id is string {
+  const t = id?.trim();
+  return Boolean(t) && t !== "YOUR_PIXEL_ID" && t !== "YOUR-PIXEL-ID";
+}
+
 export const initPixel = () => {
   if (!hasUsablePixelId) {
     if (isDev) {
@@ -68,6 +73,23 @@ export const initPixel = () => {
   t.page();
   devLog('PageView (init)');
 };
+
+/** Load TikTok Pixel from store settings (overrides / supplements default init). */
+export function initPixelWithId(pixelId: string | null | undefined) {
+  if (!isUsablePixelId(pixelId)) return;
+  const t = ttq();
+  if (!t) {
+    if (isDev) {
+      console.warn(
+        "[TikTok Pixel] SDK not ready; initPixelWithId skipped",
+      );
+    }
+    return;
+  }
+  t.load(pixelId.trim());
+  t.page();
+  devLog("PageView (store pixel)");
+}
 
 /** Fire on every SPA route change. */
 export const trackPageView = () => {

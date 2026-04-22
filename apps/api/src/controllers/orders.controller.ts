@@ -48,11 +48,12 @@ export async function getOrdersController(req: Request, res: Response) {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const parsed = listOrdersQuerySchema.safeParse(req.query);
     if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-    const { status, page, search } = parsed.data;
+    const { status, page, pageSize, search } = parsed.data;
     const result = await listStoreOrders(req.user.storeId, {
       status,
       search,
       page: page ?? 1,
+      pageSize,
     });
     return res.json(result);
   } catch (error) {

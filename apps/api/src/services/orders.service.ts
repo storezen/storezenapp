@@ -8,7 +8,7 @@ import {
   sendOwnerAlert,
   sendPickedUp,
 } from "@storepk/whatsapp";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { conversationStateTable, db } from "../db";
 import { influencersTable } from "../db/schema";
 import {
@@ -51,6 +51,11 @@ function isWhatsappEnabled() {
   if (!raw) return true;
   const normalized = raw.trim().toLowerCase();
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
+
+/** Match Ultramsg `from` (digits) to rows saved from `customerPhone`. */
+export function normalizePhoneDigits(input: string): string {
+  return String(input ?? "").replace(/\D/g, "");
 }
 
 function getDeliveryFeeByCity(city: string) {
@@ -188,7 +193,7 @@ export async function placeOrder(data: PlaceOrderInput) {
 
   await db.insert(conversationStateTable).values({
     id: randomUUID(),
-    phone: order.customerPhone,
+    phone: normalizePhoneDigits(order.customerPhone) || order.customerPhone.trim(),
     orderId: order.id,
     waitingFor: "order_confirmation",
   });
@@ -260,10 +265,17 @@ export async function updateStatus(id: string, status: string, storeId: string) 
 
 export async function processOrderConfirmationReply(phone: string, body: string) {
   const normalized = body.trim().toLowerCase();
+  const phoneKey = normalizePhoneDigits(phone) || phone.trim();
+  const phoneVariants = Array.from(new Set([phoneKey, phone.trim()].filter((p) => p.length > 0)));
+  if (phoneVariants.length === 0) {
+    return { ok: true, handled: false };
+  }
   const [state] = await db
     .select()
     .from(conversationStateTable)
-    .where(and(eq(conversationStateTable.phone, phone), eq(conversationStateTable.waitingFor, "order_confirmation")))
+    .where(
+      and(eq(conversationStateTable.waitingFor, "order_confirmation"), inArray(conversationStateTable.phone, phoneVariants)),
+    )
     .orderBy(desc(conversationStateTable.createdAt))
     .limit(1);
 
@@ -299,13 +311,21 @@ export async function processOrderConfirmationReply(phone: string, body: string)
 
   if (normalized === "1") {
     await updateOrderStatus(order.id, "confirmed");
-    await sendOrderConfirmed(orderPayload, storePayload);
+    try {
+      await sendOrderConfirmed(orderPayload, storePayload);
+    } catch {
+      // WhatsApp must not block webhook
+    }
     await db.delete(conversationStateTable).where(eq(conversationStateTable.id, state.id));
     return { ok: true, handled: true };
   }
   if (normalized === "2") {
     await updateOrderStatus(order.id, "cancelled");
-    await sendOrderCancelled(orderPayload, storePayload);
+    try {
+      await sendOrderCancelled(orderPayload, storePayload);
+    } catch {
+      // WhatsApp must not block webhook
+    }
     await db.delete(conversationStateTable).where(eq(conversationStateTable.id, state.id));
     return { ok: true, handled: true };
   }
@@ -359,7 +379,10 @@ export async function exportCSV(storeId: string) {
   return [header, ...body].join("\n");
 }
 
-export async function listStoreOrders(storeId: string, filters: { status?: string; search?: string; page?: number }) {
+export async function listStoreOrders(
+  storeId: string,
+  filters: { status?: string; search?: string; page?: number; pageSize?: number },
+) {
   const orders = await findOrdersByStore(storeId, filters);
   const stats = await getOrderStats(storeId);
   return { orders, stats };

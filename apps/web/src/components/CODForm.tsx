@@ -11,48 +11,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { STORE_CONFIG } from '../config';
 import { trackInitiateCheckout, trackCompletePayment } from '../lib/tiktok-pixel';
 import { CartItem } from '../hooks/use-cart';
-import { saveOrder, setLastOrderId } from '../lib/orders';
+import { setLastOrderId } from '../lib/orders';
+import { useCart } from '../hooks/use-cart';
 import { applyCouponUsage } from '../data/coupons';
 import { type AppliedCoupon } from './CouponInput';
-import { ChevronDown, Clock, Truck, StickyNote, User, Phone, MapPin, X, Tag, CreditCard, Banknote, Upload, Copy, Check as CheckIcon } from 'lucide-react';
+import { ChevronDown, Clock, Truck, StickyNote, User, Phone, MapPin, X, Tag, CreditCard, Upload, Copy, Check as CheckIcon } from 'lucide-react';
 import { API_URL } from '../config';
 import { useStore } from '../hooks/use-store';
 
 type PaymentMethod = 'cod' | 'online';
 type OnlineMethod  = 'jazzcash' | 'easypaisa' | 'bank';
 
-// ─── Cities with delivery estimates ────────────────────────────────────────────
+// ─── Pakistani cities (delivery estimates) ───────────────────────────────────
 const CITIES: { name: string; days: string }[] = [
-  { name: 'Lahore',          days: '1-2 days' },
-  { name: 'Islamabad',       days: '1-2 days' },
-  { name: 'Rawalpindi',      days: '1-2 days' },
-  { name: 'Karachi',         days: '2-3 days' },
-  { name: 'Faisalabad',      days: '2-3 days' },
-  { name: 'Multan',          days: '2-3 days' },
-  { name: 'Peshawar',        days: '2-3 days' },
-  { name: 'Gujranwala',      days: '2-3 days' },
-  { name: 'Sialkot',         days: '2-3 days' },
-  { name: 'Hyderabad',       days: '2-3 days' },
-  { name: 'Sargodha',        days: '2-3 days' },
-  { name: 'Sahiwal',         days: '2-3 days' },
-  { name: 'Bahawalpur',      days: '3-4 days' },
-  { name: 'Sukkur',          days: '3-4 days' },
-  { name: 'Mardan',          days: '3-4 days' },
-  { name: 'Abbottabad',      days: '3-4 days' },
-  { name: 'Jhang',           days: '3-4 days' },
-  { name: 'Quetta',          days: '3-5 days' },
-  { name: 'Larkana',         days: '3-5 days' },
-  { name: 'Dera Ghazi Khan', days: '3-5 days' },
-  { name: 'Other',           days: '3-5 days' },
+  { name: 'Karachi',     days: '2-3 days' },
+  { name: 'Lahore',      days: '1-2 days' },
+  { name: 'Islamabad',   days: '1-2 days' },
+  { name: 'Rawalpindi',  days: '1-2 days' },
+  { name: 'Peshawar',    days: '2-3 days' },
+  { name: 'Quetta',      days: '3-5 days' },
+  { name: 'Multan',      days: '2-3 days' },
+  { name: 'Faisalabad',  days: '2-3 days' },
+  { name: 'Sialkot',     days: '2-3 days' },
+  { name: 'Gujranwala',  days: '2-3 days' },
+  { name: 'Hyderabad',   days: '2-3 days' },
+  { name: 'Abbottabad',  days: '3-4 days' },
+  { name: 'Sukkur',      days: '3-4 days' },
+  { name: 'Larkana',     days: '3-5 days' },
+  { name: 'Mirpur',      days: '3-4 days' },
+  { name: 'Bahawalpur',  days: '3-4 days' },
+  { name: 'Other',       days: '3-5 days' },
 ];
 
 const LS_KEY = 'zorvik_customer_info';
-
-function generateOrderId() {
-  const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const rand = Array.from({ length: 5 }, () => alpha[Math.floor(Math.random() * alpha.length)]).join('');
-  return `ZVK-2026-${rand}`;
-}
 
 function formatPhoneDisplay(raw: string): string {
   const digits = raw.replace(/\D/g, '').slice(0, 11);
@@ -61,14 +52,27 @@ function formatPhoneDisplay(raw: string): string {
 }
 
 // ─── Validation schema ─────────────────────────────────────────────────────────
-const schema = z.object({
-  fullName:  z.string().min(2, 'Name must be at least 2 characters'),
-  phone:     z.string().refine(v => /^03\d{9}$/.test(v.replace(/\D/g, '')), 'Enter valid number: 03XXXXXXXXX'),
-  city:      z.string().min(1, 'Please select a city'),
-  cityOther: z.string().optional(),
-  address:   z.string().min(5, 'Please enter your complete address'),
-  notes:     z.string().optional(),
-});
+const PK_PHONE = /^03[0-9]{9}$/;
+
+const CITY_NAMES = CITIES.map((c) => c.name) as [string, ...string[]];
+
+const schema = z
+  .object({
+    fullName: z.string().min(2, 'Name must be at least 2 characters'),
+    phone: z.string().refine((v) => PK_PHONE.test(v.replace(/\D/g, '')), 'Enter valid Pakistani mobile: 03XXXXXXXXX'),
+    city: z.enum(CITY_NAMES, {
+      required_error: 'Please select a city',
+      invalid_type_error: 'Please select a city',
+    }),
+    cityOther: z.string().optional(),
+    address: z.string().min(5, 'Please enter your complete address'),
+    notes: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.city === 'Other' && (!data.cityOther || data.cityOther.trim().length < 2)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Please enter your city name', path: ['cityOther'] });
+    }
+  });
 type FormValues = z.infer<typeof schema>;
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
@@ -84,6 +88,7 @@ interface CODFormProps {
 export function CODForm({ open, onOpenChange, items, onOrderSuccess, appliedCoupon }: CODFormProps) {
   const [, setLocation]   = useLocation();
   const { store } = useStore();
+  const { clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notesOpen, setNotesOpen]       = useState(false);
   const [isReturning, setIsReturning]   = useState(false);
@@ -104,8 +109,14 @@ export function CODForm({ open, onOpenChange, items, onOrderSuccess, appliedCoup
     const price = item.variant?.optionPrice ?? item.product.price;
     return sum + price * item.quantity;
   }, 0);
-  const freeDelivery   = itemTotal >= 2000;
-  const baseDelivery   = freeDelivery ? 0 : STORE_CONFIG.deliveryCharge;
+  const deliverySettings =
+    store?.deliverySettings && typeof store.deliverySettings === 'object'
+      ? (store.deliverySettings as Record<string, unknown>)
+      : ({} as Record<string, unknown>);
+  const freeDeliveryThreshold = Number(deliverySettings.freeAbove ?? 2000);
+  const defaultFee = Number(deliverySettings.fee ?? deliverySettings.standard ?? 200);
+  const freeDelivery = itemTotal >= freeDeliveryThreshold;
+  const baseDelivery = freeDelivery ? 0 : defaultFee;
   // Apply coupon
   const isFreeDelivCoupon = appliedCoupon?.coupon.discount_type === 'free_delivery';
   const effectiveDelivery = appliedCoupon
@@ -156,55 +167,96 @@ export function CODForm({ open, onOpenChange, items, onOrderSuccess, appliedCoup
 
   // ── Submit ───────────────────────────────────────────────────────────────────
   const onSubmit = async (data: FormValues) => {
+    form.clearErrors('root');
+    if (!store?.id) {
+      form.setError('root', { message: 'Store is not available. Please refresh and try again.' });
+      return;
+    }
+    if (paymentMethod === 'online' && !transactionId.trim()) {
+      form.setError('root', { message: 'Please enter your payment transaction ID for online orders.' });
+      return;
+    }
+
+    const rawPhone = data.phone.replace(/\D/g, '');
+    if (!PK_PHONE.test(rawPhone)) {
+      form.setError('phone', { message: 'Enter valid Pakistani mobile: 03XXXXXXXXX' });
+      return;
+    }
+
+    const cityDisplay = isOtherCity && data.cityOther?.trim() ? data.cityOther.trim() : data.city;
+
     setIsSubmitting(true);
-    const rawPhone    = data.phone.replace(/\D/g, '');
-    const cityDisplay = isOtherCity && data.cityOther ? data.cityOther : data.city;
+    try {
+      localStorage.setItem(
+        LS_KEY,
+        JSON.stringify({
+          fullName: data.fullName,
+          phone: data.phone,
+          city: data.city,
+          cityOther: data.cityOther,
+          address: data.address,
+        }),
+      );
 
-    // Save to localStorage (without notes for privacy)
-    localStorage.setItem(LS_KEY, JSON.stringify({
-      fullName: data.fullName, phone: data.phone, city: data.city, cityOther: data.cityOther, address: data.address,
-    }));
+      const trackItems = items.map((i) => ({
+        id: i.product.id,
+        price: i.variant?.optionPrice ?? i.product.price,
+        quantity: i.quantity,
+      }));
 
-    const trackItems = items.map(i => ({
-      id:       i.product.id,
-      price:    i.variant?.optionPrice ?? i.product.price,
-      quantity: i.quantity,
-    }));
-    const payload = {
-      storeId: store?.id,
-      customerName: data.fullName,
-      customerPhone: rawPhone,
-      customerCity: cityDisplay,
-      customerAddress: data.address,
-      items: items.map((item) => ({
-        productId: item.product.id,
-        quantity: item.quantity,
-      })),
-      paymentMethod: paymentMethod === 'cod' ? 'cod' : onlineMethod,
-      couponCode: appliedCoupon?.code,
-      notes: data.notes?.trim() || undefined,
-    };
-    const resp = await fetch(`${API_URL}/orders`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const created = await resp.json().catch(() => ({}));
-    if (!resp.ok || !created?.id) {
-      throw new Error(created?.error ?? 'Failed to place order');
+      /* POST /orders — API expects camelCase (Zod placeOrderSchema); subtotal/delivery/total are computed server-side. */
+      const payload = {
+        storeId: store.id,
+        customerName: data.fullName,
+        customerPhone: rawPhone,
+        customerCity: cityDisplay,
+        customerAddress: data.address,
+        items: items.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        paymentMethod: paymentMethod === 'cod' ? 'cod' : onlineMethod,
+        couponCode: appliedCoupon?.code?.trim() || undefined,
+        notes: data.notes?.trim() || undefined,
+      };
+
+      const resp = await fetch(`${API_URL}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const created = (await resp.json().catch(() => ({}))) as { id?: string; error?: string | Record<string, unknown> };
+      if (!resp.ok || !created?.id) {
+        const rawErr = created?.error;
+        let errMsg = 'Failed to place order';
+        if (typeof rawErr === 'string') errMsg = rawErr;
+        else if (rawErr && typeof rawErr === 'object' && 'formErrors' in rawErr) {
+          errMsg = 'Please check your order details and try again.';
+        } else if (resp.status === 400) {
+          errMsg = 'Could not place order. Check stock and details.';
+        }
+        throw new Error(errMsg);
+      }
+
+      trackCompletePayment(trackItems, grandTotal, created.id);
+
+      if (appliedCoupon) {
+        applyCouponUsage(appliedCoupon.code);
+      }
+
+      setLastOrderId(created.id);
+      clearCart();
+
+      onOrderSuccess();
+      onOpenChange(false);
+      setLocation(`/order-confirmation/${created.id}`);
+    } catch (err) {
+      form.setError('root', {
+        message: err instanceof Error ? err.message : 'Failed to place order',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    trackCompletePayment(trackItems, grandTotal, created.id);
-
-    // Track coupon usage in localStorage
-    if (appliedCoupon) {
-      applyCouponUsage(appliedCoupon.code);
-    }
-
-    setLastOrderId(created.id);
-    setIsSubmitting(false);
-    onOrderSuccess();        // clear cart + coupon
-    onOpenChange(false);     // close dialog
-    setLocation(`/order-confirmation/${created.id}`); // navigate to full page
   };
 
   // ── Main form ────────────────────────────────────────────────────────────────
@@ -295,7 +347,7 @@ export function CODForm({ open, onOpenChange, items, onOrderSuccess, appliedCoup
               </div>
               {freeDelivery && !appliedCoupon && (
                 <p className="text-[10px] text-green-600 dark:text-green-400">
-                  Free delivery on orders above Rs. 2,000
+                  Free delivery on orders above Rs. {freeDeliveryThreshold.toLocaleString()}
                 </p>
               )}
               <div className="flex justify-between font-black text-base pt-1.5 border-t border-border">
@@ -661,6 +713,11 @@ export function CODForm({ open, onOpenChange, items, onOrderSuccess, appliedCoup
 
         {/* ── Submit Button ─────────────────────────────────────────────────── */}
         <div className="px-4 pb-5 pt-3 border-t border-border bg-card flex-shrink-0">
+          {form.formState.errors.root?.message && (
+            <p className="text-sm text-destructive font-medium mb-3" role="alert">
+              {form.formState.errors.root.message}
+            </p>
+          )}
           <Button
             type="submit"
             form="cod-form"

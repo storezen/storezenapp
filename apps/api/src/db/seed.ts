@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import { logger } from "../lib/logger";
 import { db, pool, productsTable, storesTable, usersTable } from "./index";
 
 const SALT_ROUNDS = 10;
@@ -14,8 +15,14 @@ function slugify(value: string) {
     .slice(0, 48);
 }
 
+async function countStores(): Promise<number> {
+  const [row] = await db.select({ n: sql<number>`count(*)::int` }).from(storesTable);
+  return Number(row?.n ?? 0);
+}
+
+/** Ensures an admin user exists (by ADMIN_EMAIL). Creates only if missing. */
 async function ensureAdminUser() {
-  const email = process.env.ADMIN_EMAIL ?? "admin@storepk.com";
+  const email = (process.env.ADMIN_EMAIL ?? "admin@storepk.com").toLowerCase().trim();
   const password = process.env.ADMIN_PASSWORD ?? "strong-password";
   const name = "Platform Admin";
 
@@ -33,44 +40,31 @@ async function ensureAdminUser() {
       isActive: true,
     })
     .returning();
+  logger.info({ email: created.email }, "Created admin user");
   return created;
 }
 
-async function ensureDemoStore() {
-  const demoEmail = "demo@storepk.com";
-  const demoPassword = "demo12345";
-  const demoName = "Demo Owner";
-
-  let [owner] = await db.select().from(usersTable).where(eq(usersTable.email, demoEmail)).limit(1);
-  if (!owner) {
-    const hashed = await bcrypt.hash(demoPassword, SALT_ROUNDS);
-    [owner] = await db
-      .insert(usersTable)
-      .values({
-        name: demoName,
-        email: demoEmail,
-        password: hashed,
-        plan: "free",
-        isActive: true,
-      })
-      .returning();
-  }
-
+/** If there are no stores at all, create Demo Store (slug `demo`) owned by the admin user. */
+async function ensureDemoStore(adminUserId: string) {
   const baseSlug = "demo";
-  const [existingStore] = await db.select().from(storesTable).where(eq(storesTable.slug, baseSlug)).limit(1);
-  if (existingStore) return existingStore;
+  const [existingDemo] = await db.select().from(storesTable).where(eq(storesTable.slug, baseSlug)).limit(1);
+  if (existingDemo) return existingDemo;
+
+  if ((await countStores()) > 0) {
+    return null;
+  }
 
   const [store] = await db
     .insert(storesTable)
     .values({
       id: randomUUID(),
-      userId: owner.id,
+      userId: adminUserId,
       name: "Demo Store",
       slug: baseSlug,
       isActive: true,
     })
     .returning();
-
+  logger.info({ slug: store.slug }, "Created demo store");
   return store;
 }
 
@@ -125,25 +119,46 @@ async function ensureDemoProducts(storeId: string) {
   ];
 
   await db.insert(productsTable).values(demoProducts);
+  logger.info({ storeId, count: demoProducts.length }, "Seeded demo products");
 }
 
-async function run() {
+/**
+ * Idempotent seed: admin user (if missing), demo store (if no stores), sample products (if store empty).
+ * When `users` is empty, runs full bootstrap (Railway fresh DB).
+ */
+export async function seedDatabase(): Promise<void> {
   const admin = await ensureAdminUser();
-  const store = await ensureDemoStore();
-  await ensureDemoProducts(store.id);
+  if (!admin) {
+    logger.warn("Could not resolve admin user; skipping demo store seed");
+    return;
+  }
 
-  console.log("Seed completed.");
-  console.log(`Admin: ${admin.email}`);
-  console.log(`Demo store: ${store.slug}`);
+  const store = await ensureDemoStore(admin.id);
+  if (store) {
+    await ensureDemoProducts(store.id);
+  }
+
+  logger.info("Seed step completed");
 }
 
-run()
-  .then(async () => {
+/** CLI: `pnpm run db:seed` */
+async function runCli() {
+  try {
+    await seedDatabase();
+  } finally {
     await pool.end();
-    process.exit(0);
-  })
-  .catch(async (error) => {
-    console.error("Seed failed:", error);
-    await pool.end();
-    process.exit(1);
-  });
+  }
+}
+
+const isSeedCli =
+  typeof process.argv[1] === "string" &&
+  (process.argv[1].includes("seed") || process.argv[1].endsWith("seed.ts"));
+
+if (isSeedCli && !process.argv[1].includes("seed-admin")) {
+  runCli()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error("Seed failed:", error);
+      process.exit(1);
+    });
+}

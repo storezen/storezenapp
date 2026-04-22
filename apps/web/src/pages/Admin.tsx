@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
-import { BarChart3, FolderOpen, LogOut, MessageCircle, Package, Settings, ShoppingBag, Truck, Ticket, TrendingUp, Users } from 'lucide-react';
+import { FolderOpen, LogOut, MessageCircle, Package, Settings, ShoppingBag, Truck, Ticket, TrendingUp, Users } from 'lucide-react';
 import { API_URL } from '../config';
 import { useAuth } from '../hooks/use-auth';
 import { AdminProductsApi } from '../components/admin/AdminProductsApi';
@@ -11,6 +11,8 @@ import { AdminOrders } from '../components/admin/AdminOrders';
 import { AdminSettings } from '../components/admin/AdminSettings';
 import { AdminCoupons } from '../components/admin/AdminCoupons';
 import { AdminInfluencers } from '../components/admin/AdminInfluencers';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 type StatsResponse = {
   stats?: {
@@ -32,10 +34,14 @@ function StatsCard({ label, value }: { label: string; value: string }) {
 }
 
 export default function Admin() {
-  const { isLoading, isAuthenticated, token, logout } = useAuth();
+  const { isLoading, isAuthenticated, token, login, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<TabId>('orders');
   const [stats, setStats] = useState<StatsResponse['stats']>();
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
 
   useEffect(() => {
     async function loadStats() {
@@ -69,6 +75,20 @@ export default function Admin() {
     [],
   );
 
+  async function handleAdminLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoginError('');
+    setLoginSubmitting(true);
+    try {
+      await login(loginEmail, loginPassword);
+      setLoginPassword('');
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setLoginSubmitting(false);
+    }
+  }
+
   if (isLoading) {
     return <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">Loading...</div>;
   }
@@ -76,16 +96,42 @@ export default function Admin() {
   if (!isAuthenticated || !token) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center p-6">
-        <div className="max-w-sm text-center space-y-4">
-          <h1 className="text-2xl font-black">Admin Login Required</h1>
-          <p className="text-gray-400 text-sm">Please login with your account to access dashboard.</p>
-          <button
-            onClick={() => setLocation('/login')}
-            className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-white font-bold py-2.5 rounded-xl"
-          >
-            Go to Login
-          </button>
-        </div>
+        <form
+          onSubmit={handleAdminLogin}
+          className="w-full max-w-sm space-y-4 bg-[#111118] border border-gray-800 rounded-2xl p-6"
+        >
+          <h1 className="text-2xl font-black text-center">Store Admin</h1>
+          <p className="text-gray-400 text-sm text-center">Sign in to manage your store</p>
+          <div className="space-y-3">
+            <Input
+              type="email"
+              placeholder="Email"
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="bg-[#0d0d1a] border-gray-800"
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className="bg-[#0d0d1a] border-gray-800"
+            />
+          </div>
+          {loginError ? <p className="text-sm text-rose-400 text-center">{loginError}</p> : null}
+          <Button type="submit" className="w-full font-bold" disabled={loginSubmitting}>
+            {loginSubmitting ? 'Signing in...' : 'Sign in'}
+          </Button>
+          <p className="text-center text-xs text-gray-500">
+            <button type="button" onClick={() => setLocation('/')} className="text-rose-400 hover:underline">
+              Back to store
+            </button>
+          </p>
+        </form>
       </div>
     );
   }
@@ -97,7 +143,6 @@ export default function Admin() {
         <button
           onClick={() => {
             logout();
-            setLocation('/login');
           }}
           className="flex items-center gap-1.5 text-xs bg-rose-900/40 hover:bg-rose-800/50 text-rose-300 px-3 py-2 rounded-lg"
         >
@@ -143,7 +188,7 @@ export default function Admin() {
             <AdminTemplates />
           </div>
         )}
-        {activeTab === 'tiktok' && <AdminTikTokPixel />}
+        {activeTab === 'tiktok' && <AdminTikTokPixel token={token} />}
       </main>
     </div>
   );

@@ -22,6 +22,7 @@ export const placeOrderSchema = z.object({
 export const listOrdersQuerySchema = z.object({
   status: z.string().optional(),
   page: z.coerce.number().int().positive().optional(),
+  pageSize: z.coerce.number().int().positive().max(500).optional(),
   search: z.string().optional(),
 });
 

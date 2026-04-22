@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '../hooks/use-products';
@@ -10,16 +10,25 @@ import { useStore } from '../hooks/use-store';
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 
-const categories = ['All', 'Clothing', 'Digital', 'Beauty'];
-
 export default function Catalog() {
   const { store } = useStore();
   useSeo({ title: `Shop All Products — ${store?.name ?? 'Store'}`, description: 'Browse our full collection of products. Cash on Delivery Pakistan.' });
 
   const products = useProducts();
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      if (p.category) set.add(p.category);
+    }
+    return ['All', ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [products]);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [sort, setSort] = useState<SortOption>('featured');
+
+  useEffect(() => {
+    if (!categories.includes(activeCategory)) setActiveCategory('All');
+  }, [categories, activeCategory]);
 
   const filtered = useMemo(() => {
     let list = [...products];
@@ -41,7 +50,7 @@ export default function Catalog() {
     }
 
     return list;
-  }, [search, activeCategory, sort]);
+  }, [products, search, activeCategory, sort]);
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">

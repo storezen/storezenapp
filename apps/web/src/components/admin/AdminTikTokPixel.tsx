@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { TrendingUp, Save, RefreshCw, Eye, EyeOff, Trash2, AlertCircle, Check, Activity, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { TrendingUp, Save, Eye, EyeOff, Trash2, AlertCircle, Check, Activity, Info, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { API_URL } from '../../config';
+import { useToast } from '../../hooks/use-toast';
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 interface PixelEvent {
@@ -185,23 +187,73 @@ function DebugPanel() {
 }
 
 /* ── Main Component ──────────────────────────────────────────────────────── */
-export function AdminTikTokPixel() {
-  const [settings, setSettings] = useState<PixelSettings>(loadSettings);
+export function AdminTikTokPixel({ token }: { token: string }) {
+  const { toast } = useToast();
+  const [settings, setSettings] = useState<PixelSettings>(() => {
+    const base = loadSettings();
+    return base;
+  });
   const [saved, setSaved] = useState(false);
   const [showId, setShowId] = useState(false);
+  const [loadingStore, setLoadingStore] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const loadStorePixel = useCallback(async () => {
+    setLoadingStore(true);
+    try {
+      const resp = await fetch(`${API_URL}/stores/my`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = (await resp.json().catch(() => ({}))) as { tiktokPixel?: string | null };
+      if (resp.ok && typeof data?.tiktokPixel === 'string' && data.tiktokPixel.trim()) {
+        setSettings((s) => ({ ...s, pixelId: data.tiktokPixel.trim() }));
+      }
+    } catch {
+      /* keep local */
+    } finally {
+      setLoadingStore(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    loadStorePixel();
+  }, [loadStorePixel]);
 
   function update(patch: Partial<PixelSettings>) {
-    setSettings(s => ({ ...s, ...patch }));
+    setSettings((s) => ({ ...s, ...patch }));
     setSaved(false);
   }
 
-  function handleSave() {
-    saveSettings(settings);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-    // Reload pixel with new ID
-    if (settings.pixelId && window.ttq) {
-      try { window.ttq.load(settings.pixelId); } catch {}
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const resp = await fetch(`${API_URL}/stores/my/pixel`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tiktokPixel: settings.pixelId.trim() || undefined }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        toast({
+          title: 'Save failed',
+          description: String(data?.error ?? 'Could not save pixel'),
+          variant: 'destructive',
+        });
+        return;
+      }
+      saveSettings(settings);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      if (settings.pixelId && window.ttq) {
+        try {
+          window.ttq.load(settings.pixelId);
+        } catch {
+          /* ignore */
+        }
+      }
+      toast({ title: 'Pixel saved', description: 'TikTok Pixel ID stored on your store.' });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -210,20 +262,50 @@ export function AdminTikTokPixel() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-white font-black text-xl flex items-center gap-2">
             <TrendingUp size={20} className="text-rose-400" /> TikTok Pixel
           </h2>
-          <p className="text-gray-500 text-xs mt-1">Configure tracking events for your TikTok Ads Manager</p>
+          <p className="text-gray-500 text-xs mt-1">
+            Pixel ID is loaded from your store and saved with &quot;Save&quot; (PUT /stores/my/pixel). Event toggles stay on this device.
+          </p>
         </div>
-        <button
-          onClick={handleSave}
-          className={`flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-xl transition-all
+        <div className="flex items-center gap-2">
+          {loadingStore && (
+            <span className="text-xs text-gray-500 flex items-center gap-1">
+              <Loader2 size={12} className="animate-spin" /> Loading…
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => loadStorePixel()}
+            className="text-xs font-bold px-3 py-2 rounded-xl bg-gray-800 text-gray-200 hover:bg-gray-700"
+          >
+            Reload from API
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className={`flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-xl transition-all disabled:opacity-50
             ${saved ? 'bg-emerald-600 text-white' : `${GRAD} text-white`}`}
-        >
-          {saved ? <><Check size={14} /> Saved!</> : <><Save size={14} /> Save Settings</>}
-        </button>
+          >
+            {saving ? (
+              <>
+                <Loader2 size={14} className="animate-spin" /> Saving…
+              </>
+            ) : saved ? (
+              <>
+                <Check size={14} /> Saved!
+              </>
+            ) : (
+              <>
+                <Save size={14} /> Save to API
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Pixel ID */}

@@ -10,7 +10,7 @@ export type CartItem = {
 
 export function useCart() {
   const { storeSlug } = useStore();
-  const storageKey = `pk-cart-${storeSlug}`;
+  const storageKey = `${storeSlug}_cart`;
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem(storageKey);

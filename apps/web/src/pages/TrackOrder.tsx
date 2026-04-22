@@ -12,6 +12,7 @@ import {
 } from '../lib/orders';
 import { STORE_CONFIG } from '../config';
 import { useSeo } from '../hooks/useSeo';
+import { useStore } from '../hooks/use-store';
 import { API_URL } from '../config';
 
 function toUiOrderStatus(status: string | undefined): OrderStatus {
@@ -165,11 +166,14 @@ function OwnerTemplates({ order }: { order: StoredOrder }) {
 
 /* ── Order Result Card ──────────────────────────────────────────────────── */
 function OrderCard({ order }: { order: StoredOrder }) {
+  const { store } = useStore();
   const openWhatsAppHelp = () => {
     const msg = encodeURIComponent(
       `Hi! I need help with my order *${order.orderId}*. My name is ${order.name}.`
     );
-    window.open(`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${msg}`, '_blank');
+    const wa =
+      store?.whatsappNumber?.replace(/\D/g, '') ?? STORE_CONFIG.whatsappNumber.replace(/\D/g, '');
+    window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
   };
 
   return (
@@ -273,7 +277,8 @@ function OrderCard({ order }: { order: StoredOrder }) {
 
 /* ── Main TrackOrder Page ──────────────────────────────────────────────── */
 export default function TrackOrder() {
-  useSeo({ title: 'Track Your Order — Zorvik' });
+  const { store } = useStore();
+  useSeo({ title: `Track Your Order — ${store?.name ?? 'Store'}` });
 
   const [query, setQuery]     = useState('');
   const [phone, setPhone]     = useState('');
@@ -302,6 +307,11 @@ export default function TrackOrder() {
         if (phone.trim()) url.searchParams.set('phone', phone.trim());
         const resp = await fetch(url.toString());
         const data = await resp.json().catch(() => ({}));
+        if (resp.status === 404) {
+          setResults([]);
+          setSearched(true);
+          return;
+        }
         if (!resp.ok) throw new Error(data?.error ?? 'Order not found');
         const mapped: StoredOrder = {
           orderId: String(data.id),
@@ -310,13 +320,31 @@ export default function TrackOrder() {
           city: String(data.customerCity ?? ''),
           address: String(data.customerAddress ?? ''),
           items: Array.isArray(data.items)
-            ? data.items.map((item: Record<string, unknown>) => ({
-                productId: String(item.productId ?? ''),
-                productName: String(item.name ?? ''),
-                productImage: '/placeholder.svg',
-                price: Number(item.unitPrice ?? 0),
-                quantity: Number(item.quantity ?? 0),
-              }))
+            ? data.items.map((item: Record<string, unknown>) => {
+                const img =
+                  typeof item.productImage === 'string'
+                    ? item.productImage
+                    : typeof item.image === 'string'
+                      ? item.image
+                      : '/placeholder.svg';
+                const rawVar = item.variant;
+                const variant =
+                  rawVar && typeof rawVar === 'object' && !Array.isArray(rawVar)
+                    ? {
+                        size: typeof (rawVar as Record<string, unknown>).size === 'string' ? ((rawVar as Record<string, unknown>).size as string) : undefined,
+                        color: typeof (rawVar as Record<string, unknown>).color === 'string' ? ((rawVar as Record<string, unknown>).color as string) : undefined,
+                        optionName: typeof (rawVar as Record<string, unknown>).optionName === 'string' ? ((rawVar as Record<string, unknown>).optionName as string) : undefined,
+                      }
+                    : undefined;
+                return {
+                  productId: String(item.productId ?? ''),
+                  productName: String(item.name ?? ''),
+                  productImage: img,
+                  price: Number(item.unitPrice ?? 0),
+                  quantity: Number(item.quantity ?? 0),
+                  variant,
+                };
+              })
             : [],
           subtotal: Number(data.subtotal ?? 0),
           deliveryCharge: Number(data.deliveryFee ?? 0),
@@ -407,7 +435,7 @@ export default function TrackOrder() {
               <p className="text-xs text-muted-foreground mt-4">
                 Need help?{' '}
                 <a
-                  href={`https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hi! I can't find my order. My query is: ${query}`)}`}
+                  href={`https://wa.me/${store?.whatsappNumber?.replace(/\D/g, '') ?? STORE_CONFIG.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi! I can't find my order. My query is: ${query}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary font-bold hover:underline"

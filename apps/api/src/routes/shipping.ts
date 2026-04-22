@@ -2,11 +2,20 @@ import { randomUUID } from "node:crypto";
 import { and, eq, ne } from "drizzle-orm";
 import { Router } from "express";
 import { bookShipping, trackShipping } from "@storepk/shipping";
+import { sendPickedUp } from "@storepk/whatsapp";
 import { authenticate } from "../middlewares/authenticate";
 import { db, ordersTable, shipmentsTable, storesTable } from "../db";
+import { findStoreById } from "../repositories/stores.repository";
 import { bookShippingSchema, syncShippingSchema, updateShippingSettingsSchema } from "../validators/shipping.validator";
 
 const router = Router();
+
+function isWhatsappEnabled() {
+  const raw = process.env.WHATSAPP_ENABLED;
+  if (!raw) return true;
+  const normalized = raw.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
 
 router.post("/shipping/book", authenticate, async (req, res) => {
   try {
@@ -76,6 +85,33 @@ router.post("/shipping/book", authenticate, async (req, res) => {
         courier,
       })
       .where(eq(ordersTable.id, order.id));
+
+    const [updatedOrder] = await db.select().from(ordersTable).where(eq(ordersTable.id, order.id)).limit(1);
+    if (updatedOrder && isWhatsappEnabled()) {
+      const storeForWa = await findStoreById(updatedOrder.storeId);
+      if (storeForWa?.whatsappInstance && storeForWa?.whatsappApiKey) {
+        try {
+          await sendPickedUp(
+            {
+              id: updatedOrder.id,
+              total: String(updatedOrder.total ?? ""),
+              customerName: updatedOrder.customerName,
+              customerPhone: updatedOrder.customerPhone,
+              storeId: updatedOrder.storeId,
+            },
+            {
+              id: storeForWa.id,
+              name: storeForWa.name,
+              ownerPhone: storeForWa.whatsappNumber ?? undefined,
+              whatsappInstanceId: storeForWa.whatsappInstance ?? undefined,
+              whatsappToken: storeForWa.whatsappApiKey ?? undefined,
+            },
+          );
+        } catch {
+          // booking succeeded; WhatsApp is best-effort
+        }
+      }
+    }
 
     return res.json({ shipment });
   } catch (error) {

@@ -1,6 +1,6 @@
 # Vercel + Railway (monorepo) — step by step
 
-This repo is a **pnpm workspace**. Vercel must install from the **repository root** so `workspace:*` packages resolve. Each app’s `vercel.json` already sets `installCommand` to `cd ../.. && pnpm install …` when the Vercel **Root Directory** is that app folder.
+This repo is a **pnpm workspace**. Vercel must install from the **repository root** so `workspace:*` packages resolve. [`apps/web/vercel.json`](../../apps/web/vercel.json) sets `installCommand`; for **dashboard** and **admin**, set the same install command in the Vercel project settings (see [DEPLOYMENT.md](../../DEPLOYMENT.md) §3–§5).
 
 ## What you will create
 
@@ -31,7 +31,7 @@ This repo is a **pnpm workspace**. Vercel must install from the **repository roo
 | `PORT` | `3000` |
 | `NODE_ENV` | `production` |
 
-5. Deploy, then open the **public URL** Railway gives you (e.g. `https://xxx.up.railway.app`). That is your **API base** for Vercel env vars.
+5. Deploy, then open the **public URL** Railway gives you (e.g. `https://xxx.up.railway.app`). Frontends need the **API base URL including `/api`**, e.g. `https://xxx.up.railway.app/api`, for `VITE_API_URL` and `NEXT_PUBLIC_API_URL`.
 
 ### Migrations (from your laptop)
 
@@ -50,8 +50,8 @@ pnpm db:seed
 
 | Name | Value |
 | --- | --- |
-| `VITE_API_URL` | `https://<your-railway-api-host>` |
-| `VITE_DEFAULT_STORE_SLUG` | your store slug, e.g. `zorvik` |
+| `VITE_API_URL` | `https://<your-railway-api-host>/api` |
+| `VITE_DEFAULT_STORE` | tenant slug, e.g. `zorvik` |
 
 5. Deploy.
 
@@ -63,7 +63,7 @@ pnpm db:seed
 
 | Name | Value |
 | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `https://<your-railway-api-host>` |
+| `NEXT_PUBLIC_API_URL` | `https://<your-railway-api-host>/api` |
 
 4. Deploy.
 
@@ -75,7 +75,7 @@ pnpm db:seed
 
 | Name | Value |
 | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `https://<your-railway-api-host>` |
+| `NEXT_PUBLIC_API_URL` | `https://<your-railway-api-host>/api` |
 
 4. Deploy.
 
@@ -83,12 +83,12 @@ pnpm db:seed
 
 1. Attach domains in Vercel (web / dashboard / admin) and in Railway (API) if you use a custom hostname.
 2. Point DNS (CNAME / ALIAS) as each provider instructs.
-3. After URLs are final, **update** `VITE_API_URL` and `NEXT_PUBLIC_API_URL` to the production API URL and redeploy all Vercel projects.
+3. After URLs are final, **update** `VITE_API_URL` and `NEXT_PUBLIC_API_URL` to the production API base (must include `/api`) and redeploy all Vercel projects.
 4. If the API blocks unknown origins, add your Vercel domains to the API CORS allowlist in code or env (whatever this project uses).
 
 ## 7) Quick verification
 
-- API: health route (see [DEPLOYMENT.md](../../DEPLOYMENT.md) for paths you use in production).
+- API: `GET …/api/healthz` (see [DEPLOYMENT.md](../../DEPLOYMENT.md)).
 - Web: homepage loads and product/API calls hit the Railway URL (browser Network tab).
 - Dashboard / Admin: login page loads; API calls use `NEXT_PUBLIC_API_URL`.
 
@@ -108,4 +108,4 @@ zorvik/
 
 ## Alternate: Railway Root Directory = `apps/api`
 
-Only if you prefer a smaller service scope: set Root Directory to `apps/api` and rely on [`apps/api/railway.toml`](../../apps/api/railway.toml) (Railpack + `buildCommand` that runs `pnpm` from the monorepo root). The Docker path above is usually easier to reason about.
+Only if you prefer a smaller service scope: set Root Directory to `apps/api` and rely on [`apps/api/railway.toml`](../../apps/api/railway.toml) (Nixpacks + `buildCommand` that runs `pnpm` from the monorepo root). The Docker path above is usually easier to reason about.

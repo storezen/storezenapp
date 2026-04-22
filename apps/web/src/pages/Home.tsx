@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { Truck, ShieldCheck, Tag, ArrowRight, RotateCcw, Shirt, Monitor, Sparkles } from 'lucide-react';
 import { useProducts } from '../hooks/use-products';
@@ -7,12 +7,10 @@ import { Navbar } from '../components/Navbar';
 import { CountdownTimer } from '../components/CountdownTimer';
 import { StoreLogo } from '../components/StoreLogo';
 import { STORE_CONFIG } from '../config';
-import { trackClickButton, trackPageView } from '../lib/tiktok-pixel';
+import { trackClickButton, trackPageView, initPixelWithId } from '../lib/tiktok-pixel';
 import { useSeo } from '../hooks/useSeo';
 import { RecentlyViewed } from '../components/RecentlyViewed';
 import { useStore } from '../hooks/use-store';
-
-const categories = ['All', 'Clothing', 'Digital', 'Beauty'];
 
 const categoryCards = [
   {
@@ -45,8 +43,19 @@ const trustItems = [
 export default function Home() {
   const { store } = useStore();
   const products = useProducts();
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      if (p.category) set.add(p.category);
+    }
+    return ['All', ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [products]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!categories.includes(activeCategory)) setActiveCategory('All');
+  }, [categories, activeCategory]);
 
   useEffect(() => {
     trackPageView();
@@ -54,13 +63,32 @@ export default function Home() {
 
   useEffect(() => {
     const root = document.documentElement;
-    const themeColors = (store?.themeColors && typeof store.themeColors === 'object') ? store.themeColors as Record<string, unknown> : {};
+    const rawTheme =
+      store?.themeColors ??
+      (store && typeof (store as Record<string, unknown>).theme_colors === 'object'
+        ? (store as Record<string, unknown>).theme_colors
+        : null);
+    const themeColors =
+      rawTheme && typeof rawTheme === 'object' ? (rawTheme as Record<string, unknown>) : {};
     Object.entries(themeColors).forEach(([key, value]) => {
       if (typeof value === 'string' || typeof value === 'number') {
-        root.style.setProperty(`--store-${key}`, String(value));
+        const cssKey = key.replace(/_/g, '-');
+        root.style.setProperty(`--store-${cssKey}`, String(value));
       }
     });
-  }, [store?.themeColors]);
+    const primary = themeColors.primary;
+    if (typeof primary === 'string' || typeof primary === 'number') {
+      root.style.setProperty('--primary', String(primary));
+    }
+  }, [store]);
+
+  useEffect(() => {
+    if (!store) return;
+    const rec = store as Record<string, unknown>;
+    const pixel =
+      store.tiktokPixel ?? (typeof rec.tiktok_pixel === 'string' ? rec.tiktok_pixel : undefined);
+    initPixelWithId(pixel);
+  }, [store]);
 
   useSeo({
     title: `${store?.name ?? STORE_CONFIG.storeName} — Trending Fashion & Lifestyle Products`,
@@ -361,7 +389,12 @@ export default function Home() {
                 Contact
               </h4>
               <div className="flex flex-col gap-2.5 text-sm" style={{ color: '#71706E' }}>
-                <span>WhatsApp: +92 300 1234567</span>
+                <span>
+                  WhatsApp:{' '}
+                  {store?.whatsappNumber
+                    ? `+${String(store.whatsappNumber).replace(/\D/g, '')}`
+                    : `+${STORE_CONFIG.whatsappNumber.replace(/\D/g, '')}`}
+                </span>
                 <span>Mon–Sat: 9am – 9pm</span>
                 <span>Cash on Delivery</span>
               </div>

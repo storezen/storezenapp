@@ -66,7 +66,7 @@ export function AdminProductsApi({ token }: { token: string }) {
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [token]);
 
   const filtered = useMemo(
     () => products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())),
@@ -115,7 +115,7 @@ export function AdminProductsApi({ token }: { token: string }) {
       name: form.name,
       category: form.category,
       price: form.price,
-      salePrice: form.salePrice,
+      salePrice: form.salePrice ?? null,
       stock: form.stock,
       description: form.description,
       urduDescription: form.urduDescription,
@@ -123,7 +123,7 @@ export function AdminProductsApi({ token }: { token: string }) {
       whatsappText: form.whatsappText,
       metaTitle: form.metaTitle,
       metaDesc: form.metaDesc,
-      images: ['https://placehold.co/300x300?text=Product'],
+      images: editing?.id ? undefined : ['https://placehold.co/300x300?text=Product'],
       variants: {
         aiContent: {
           urduDescription: form.urduDescription ?? '',
@@ -133,7 +133,7 @@ export function AdminProductsApi({ token }: { token: string }) {
           metaDesc: form.metaDesc ?? '',
         },
       },
-      isActive: true,
+      isActive: editing ? editing.isActive !== false : true,
     };
     const url = editing ? `${API_URL}/products/${editing.id}` : `${API_URL}/products`;
     const method = editing ? 'PUT' : 'POST';
@@ -320,7 +320,19 @@ export function AdminProductsApi({ token }: { token: string }) {
         <div className="grid sm:grid-cols-2 gap-2">
           <input value={form.name} onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))} placeholder="Name" className="bg-[#0d0d1a] border border-gray-800 rounded-xl px-3 py-2 text-sm" />
           <input value={form.category} onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))} placeholder="Category" className="bg-[#0d0d1a] border border-gray-800 rounded-xl px-3 py-2 text-sm" />
-          <input type="number" value={form.price} onChange={(e) => setForm((s) => ({ ...s, price: Number(e.target.value) }))} placeholder="Price" className="bg-[#0d0d1a] border border-gray-800 rounded-xl px-3 py-2 text-sm" />
+          <input type="number" value={form.price} onChange={(e) => setForm((s) => ({ ...s, price: Number(e.target.value) }))} placeholder="List price" className="bg-[#0d0d1a] border border-gray-800 rounded-xl px-3 py-2 text-sm" />
+          <input
+            type="number"
+            value={form.salePrice ?? ''}
+            onChange={(e) =>
+              setForm((s) => ({
+                ...s,
+                salePrice: e.target.value === '' ? undefined : Number(e.target.value),
+              }))
+            }
+            placeholder="Sale price (optional)"
+            className="bg-[#0d0d1a] border border-gray-800 rounded-xl px-3 py-2 text-sm"
+          />
           <input type="number" value={form.stock} onChange={(e) => setForm((s) => ({ ...s, stock: Number(e.target.value) }))} placeholder="Stock" className="bg-[#0d0d1a] border border-gray-800 rounded-xl px-3 py-2 text-sm" />
           <textarea value={form.description ?? ''} onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))} placeholder="Description" className="bg-[#0d0d1a] border border-gray-800 rounded-xl px-3 py-2 text-sm sm:col-span-2 resize-none" rows={3} />
         </div>

@@ -8,6 +8,8 @@ type OrderFilters = {
   pageSize?: number;
 };
 
+const DEFAULT_PAGE_SIZE = 20;
+
 export async function createOrder(data: typeof ordersTable.$inferInsert) {
   const [order] = await db.insert(ordersTable).values(data).returning();
   return order;
@@ -15,7 +17,7 @@ export async function createOrder(data: typeof ordersTable.$inferInsert) {
 
 export async function findOrdersByStore(storeId: string, filters: OrderFilters) {
   const page = filters.page ?? 1;
-  const pageSize = filters.pageSize ?? 20;
+  const pageSize = Math.min(filters.pageSize ?? DEFAULT_PAGE_SIZE, 500);
   const offset = (page - 1) * pageSize;
 
   return db
@@ -75,6 +77,10 @@ export async function getOrderStats(storeId: string) {
       totalOrders: sql<number>`count(*)::int`,
       totalRevenue: sql<string>`coalesce(sum(${ordersTable.total}), 0)::text`,
       pendingOrders: sql<number>`count(*) filter (where ${ordersTable.orderStatus} = 'new')::int`,
+      newOrders: sql<number>`count(*) filter (where ${ordersTable.orderStatus} = 'new')::int`,
+      confirmedOrders: sql<number>`count(*) filter (where ${ordersTable.orderStatus} = 'confirmed')::int`,
+      shippedOrders: sql<number>`count(*) filter (where ${ordersTable.orderStatus} in ('shipped', 'out_for_delivery'))::int`,
+      deliveredOrders: sql<number>`count(*) filter (where ${ordersTable.orderStatus} = 'delivered')::int`,
     })
     .from(ordersTable)
     .where(eq(ordersTable.storeId, storeId));
@@ -83,6 +89,10 @@ export async function getOrderStats(storeId: string) {
     totalOrders: stats?.totalOrders ?? 0,
     totalRevenue: Number(stats?.totalRevenue ?? 0),
     pendingOrders: stats?.pendingOrders ?? 0,
+    newOrders: stats?.newOrders ?? 0,
+    confirmedOrders: stats?.confirmedOrders ?? 0,
+    shippedOrders: stats?.shippedOrders ?? 0,
+    deliveredOrders: stats?.deliveredOrders ?? 0,
   };
 }
 

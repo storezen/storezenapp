@@ -3,6 +3,7 @@ import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { sendDailyReport } from "@storepk/whatsapp";
 import { db, ordersTable, storesTable } from "../db";
 import { logger } from "../lib/logger";
+import { syncAllShipmentStatuses } from "./shipment-sync.service";
 
 async function sendDailyReports() {
   const stores = await db
@@ -45,7 +46,7 @@ async function sendDailyReports() {
 }
 
 async function syncShipmentStatuses() {
-  logger.info("Shipment sync tick (Phase 4 placeholder)");
+  await syncAllShipmentStatuses();
 }
 
 export function startScheduler() {
