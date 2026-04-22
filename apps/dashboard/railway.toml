@@ -1,9 +1,0 @@
-# Monorepo: Railway **Root directory** = `apps/dashboard`
-
-[build]
-builder = "RAILPACK"
-buildCommand = "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install && pnpm --filter @workspace/dashboard build"
-
-[deploy]
-startCommand = "cd ../.. && pnpm --filter @workspace/dashboard start"
-healthcheckPath = "/"
