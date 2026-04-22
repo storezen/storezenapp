@@ -1,6 +1,5 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @workspace/admin build"
+  "buildCommand": "cd ../.. && pnpm install --frozen-lockfile && cd apps/admin && pnpm build"
 }

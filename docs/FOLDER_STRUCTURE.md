@@ -13,9 +13,9 @@ This document defines the standard structure for future development. Existing co
 
 - **`docs/deploy/`** — copy-paste steps for production (three Vercel apps + one Railway API).
 - **`Dockerfile.api`** + root **`railway.toml`** — build the API from the **repository root** so `pnpm` sees all workspace packages.
-- **Per-app `vercel.json`** under `apps/web`, `apps/dashboard`, and `apps/admin` — install from repo root when Vercel Root Directory is that app folder.
+- **Per-app `vercel.json`** under `apps/pk-store`, `apps/dashboard`, and `apps/admin` — install from repo root when Vercel Root Directory is that app folder.
 
-## Frontend App Standard (`apps/web/src`)
+## Frontend App Standard (`apps/pk-store/src`)
 
 - `app/` -> application shell, router setup, providers, entry composition
 - `features/` -> feature-first modules (cart, checkout, admin, tracking)

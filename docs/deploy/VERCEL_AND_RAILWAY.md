@@ -1,12 +1,12 @@
 # Vercel + Railway (monorepo) — step by step
 
-This repo is a **pnpm workspace**. Vercel must install from the **repository root** so `workspace:*` packages resolve. [`apps/web/vercel.json`](../../apps/web/vercel.json) sets `installCommand`; for **dashboard** and **admin**, set the same install command in the Vercel project settings (see [DEPLOYMENT.md](../../DEPLOYMENT.md) §3–§5).
+This repo is a **pnpm workspace**. Vercel must install from the **repository root** so `workspace:*` packages resolve. [`apps/pk-store/vercel.json`](../../apps/pk-store/vercel.json) sets `installCommand`; for **dashboard** and **admin**, set the same install command in the Vercel project settings (see [DEPLOYMENT.md](../../DEPLOYMENT.md) §3–§5).
 
 ## What you will create
 
 | Platform | Projects | Root Directory in UI | Purpose |
 | --- | --- | --- | --- |
-| Vercel | Storefront | `apps/web` | Public shop (Vite) |
+| Vercel | Storefront | `apps/pk-store` | Public shop (Vite) |
 | Vercel | Dashboard | `apps/dashboard` | Store owner dashboard (Next.js) |
 | Vercel | Admin | `apps/admin` | Platform admin (Next.js) |
 | Railway | API (one service) | **`.` (repo root)** | Backend (`apps/api`) via `Dockerfile.api` |
@@ -41,10 +41,10 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-## 3) Vercel — Web (`apps/web`)
+## 3) Vercel — Web (`apps/pk-store`)
 
 1. New project → same GitHub repo.
-2. **Root Directory**: `apps/web`.
+2. **Root Directory**: `apps/pk-store`.
 3. Framework: Vite (from `vercel.json`).
 4. **Environment variables**:
 
@@ -97,7 +97,7 @@ pnpm db:seed
 ```text
 zorvik/
   apps/
-    web/           ← Vercel project 1 (Root: apps/web)
+    pk-store/      ← Vercel project 1 (Root: apps/pk-store)
     dashboard/     ← Vercel project 2 (Root: apps/dashboard)
     admin/           ← Vercel project 3 (Root: apps/admin)
     api/             ← Built inside Docker (Railway root: .)

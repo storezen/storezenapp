@@ -1,5 +1,5 @@
-# Storefront (Vite) — package name `@workspace/pk-store` in `apps/web`.
-# Set Railway **Root directory** to `apps/web` (this repo has no `apps/pk-store` folder).
+# Storefront (Vite) — `@workspace/pk-store` in `apps/pk-store`.
+# Railway **Root directory:** `apps/pk-store`
 
 [build]
 builder = "RAILPACK"

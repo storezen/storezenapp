@@ -1,10 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["apps/admin/**", "apps/dashboard/**", ".env*"],
+  "globalDependencies": ["apps/admin/**", "apps/dashboard/**", "apps/pk-store/**", ".env*"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**"]
+      "outputs": ["dist/**", ".next/**"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"],

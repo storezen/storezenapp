@@ -1,6 +1,6 @@
 # Deployment guide
 
-This monorepo uses **pnpm** workspaces. Vercel projects that use `apps/web`, `apps/dashboard`, or `apps/admin` as the root directory must install dependencies from the **repository root** so `workspace:*` packages resolve. The storefront `vercel.json` includes an `installCommand` for that; the Next.js apps ship a minimal `vercel.json`—set the **Install Command** in the Vercel project (see [§3](#3-vercel--storefront-appsweb)).
+This monorepo uses **pnpm** workspaces. Vercel projects that use `apps/pk-store`, `apps/dashboard`, or `apps/admin` as the root directory must run installs from the **repository root** so `workspace:*` packages resolve. Each app’s `vercel.json` uses a `buildCommand` that runs `pnpm install --frozen-lockfile` at the repo root, then `pnpm build` in that app (see [§3](#vercel-pk-store)). If you override the build in the Vercel UI, set **Install** / **Build** to preserve that root install step.
 
 Shorter UI-focused notes: [docs/deploy/VERCEL_AND_RAILWAY.md](./docs/deploy/VERCEL_AND_RAILWAY.md).
 
@@ -24,18 +24,20 @@ Shorter UI-focused notes: [docs/deploy/VERCEL_AND_RAILWAY.md](./docs/deploy/VERC
 
 **Alternate (Railpack, service root `apps/api`):** set **Root Directory** to `apps/api` and use [`apps/api/railway.toml`](./apps/api/railway.toml) (monorepo `cd ../.. && pnpm install && pnpm --filter …`).
 
-**Multiple Railway services (same repo):** add one service per app and set **Root Directory** to `apps/api`, `apps/web`, `apps/dashboard`, or `apps/admin`. Each app has a `railway.toml` with `cd ../..` so **pnpm workspace** resolves from the repo root. Set env vars per service (only the API needs `DATABASE_URL`, etc.).
+**Multiple Railway services (same repo):** add one service per app and set **Root Directory** to `apps/api`, `apps/pk-store`, `apps/dashboard`, or `apps/admin`. Each app has a `railway.toml` with `cd ../..` so **pnpm workspace** resolves from the repo root. Set env vars per service (only the API needs `DATABASE_URL`, etc.).
 
 ---
 
-## 3) Vercel — storefront (`apps/web`)
+## 3) Vercel — storefront (`apps/pk-store`)
+
+<a id="vercel-pk-store"></a>
 
 1. New Vercel project → same GitHub repo.
-2. **Root Directory:** `apps/web`.
-3. Framework is detected from [`apps/web/vercel.json`](./apps/web/vercel.json) (Vite). Build output is **`dist/public`** (see `vite.config.ts`).
-4. **Domains (wildcard tenants):** in the Vercel project, add **`storepk.com`** (apex) and **`*.storepk.com`** (wildcard). Tenant routing is **client-side** (see [`use-store-slug.ts`](./apps/web/src/hooks/use-store-slug.ts)).
-5. **SPA fallback:** [`apps/web/vercel.json`](./apps/web/vercel.json) rewrites unknown paths to `index.html`. [`apps/web/public/_redirects`](./apps/web/public/_redirects) (`/* /index.html 200`) is shipped for Netlify-style deploys or static mirrors; Vercel does not require it when rewrites are set.
-6. **Environment variables:** see [Storefront (Vite)](#storefront-vite-appsweb) in the table below.
+2. **Root Directory:** `apps/pk-store`.
+3. Framework is detected from [`apps/pk-store/vercel.json`](./apps/pk-store/vercel.json) (Vite). Build output is **`dist`** (see `vite.config.ts`).
+4. **Domains (wildcard tenants):** in the Vercel project, add **`storepk.com`** (apex) and **`*.storepk.com`** (wildcard). Tenant routing is **client-side** (see [`use-store-slug.ts`](./apps/pk-store/src/hooks/use-store-slug.ts)).
+5. **SPA fallback:** [`apps/pk-store/vercel.json`](./apps/pk-store/vercel.json) rewrites unknown paths to `index.html`. [`apps/pk-store/public/_redirects`](./apps/pk-store/public/_redirects) (`/* /index.html 200`) is shipped for Netlify-style deploys or static mirrors; Vercel does not require it when rewrites are set.
+6. **Environment variables:** see [Storefront (Vite)](#env-storefront-vite) in the table below.
 7. Deploy.
 
 ---
@@ -96,7 +98,9 @@ Copy from [`.env.example`](./.env.example) and adjust for production URLs.
 | `WHATSAPP_WEBHOOK_SECRET` | Optional | Webhook verification |
 | `LOG_LEVEL` | Optional | Default `info` |
 
-### Storefront (Vite, `apps/web`)
+### Storefront (Vite, `apps/pk-store`)
+
+<a id="env-storefront-vite"></a>
 
 | Variable | Required | Notes |
 | --- | --- | --- |
