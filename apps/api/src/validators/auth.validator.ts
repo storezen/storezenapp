@@ -24,3 +24,13 @@ export const resetPasswordSchema = z.object({
   newPassword: z.string().min(8).max(128),
 });
 
+export const updateProfileSchema = z.object({
+  name: z.string().min(2).max(255).optional(),
+  email: z.string().email().max(255).optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8).max(128),
+});
+

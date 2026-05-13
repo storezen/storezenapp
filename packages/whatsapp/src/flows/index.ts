@@ -99,6 +99,26 @@ export async function sendOwnerAlert(order: OrderLike, store: StoreLike) {
   return runTemplateSend("NEW_ORDER_ALERT", order, store, store.ownerPhone ?? "");
 }
 
+export async function sendAbandonedCartReminder(
+  cart: { id: string; customerName?: string; customerPhone: string; summary: string },
+  store: StoreLike,
+) {
+  const pseudoOrder: OrderLike = { id: cart.id, customerName: cart.customerName, customerPhone: cart.customerPhone, storeId: store.id };
+  const message = MESSAGES.ABANDONED_CART({
+    name: cart.customerName ?? "Customer",
+    summary: cart.summary,
+    store_name: store.name,
+  });
+  const ok = await sendMessage(
+    cart.customerPhone,
+    message,
+    store.whatsappInstanceId ?? "",
+    store.whatsappToken ?? "",
+  );
+  await logWhatsapp(pseudoOrder, store, "ABANDONED_CART", cart.customerPhone, message, ok);
+  return ok;
+}
+
 export async function sendDailyReport(
   report: { date: string; orders: number; delivered: number; revenue: number },
   store: StoreLike,

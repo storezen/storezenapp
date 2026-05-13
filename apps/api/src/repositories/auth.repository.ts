@@ -112,3 +112,12 @@ export async function updateUserPassword(userId: string, hashedPassword: string)
     .where(eq(usersTable.id, userId));
 }
 
+export async function updateUserById(userId: string, data: { name?: string; email?: string }) {
+  const [user] = await db
+    .update(usersTable)
+    .set(data)
+    .where(eq(usersTable.id, userId))
+    .returning({ id: usersTable.id, name: usersTable.name, email: usersTable.email });
+  return user ?? null;
+}
+

@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { eq } from "drizzle-orm";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { db, storesTable } from "../db";
+import { db, storesTable, usersTable } from "../db";
 import {
   createPasswordResetToken,
   createRefreshToken,
@@ -14,6 +14,7 @@ import {
   markPasswordResetTokenUsed,
   revokeRefreshToken,
   updateUserPassword,
+  updateUserById,
 } from "../repositories/auth.repository";
 
 const SALT_ROUNDS = 10;
@@ -194,6 +195,29 @@ export async function resetPassword(token: string, newPassword: string) {
   const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await updateUserPassword(resetRow.userId, hashed);
   await markPasswordResetTokenUsed(resetRow.id);
+
+  return { ok: true as const };
+}
+
+export async function updateProfile(userId: string, data: { name?: string; email?: string }) {
+  const user = await updateUserById(userId, data);
+  if (!user) throw new Error("User not found");
+  return user;
+}
+
+export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const user = await findUserById(userId);
+  if (!user) throw new Error("User not found");
+
+  // Get the full user with password
+  const [fullUser] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!fullUser) throw new Error("User not found");
+
+  const ok = await bcrypt.compare(currentPassword, fullUser.password);
+  if (!ok) throw new Error("Current password is incorrect");
+
+  const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  await updateUserPassword(userId, hashed);
 
   return { ok: true as const };
 }

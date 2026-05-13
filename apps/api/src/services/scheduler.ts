@@ -3,7 +3,9 @@ import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { sendDailyReport } from "@storepk/whatsapp";
 import { db, ordersTable, storesTable } from "../db";
 import { logger } from "../lib/logger";
+import { processAbandonedCartReminders } from "./abandoned-cart.service";
 import { syncAllShipmentStatuses } from "./shipment-sync.service";
+import { updateProduct } from "../repositories/products.repository";
 
 async function sendDailyReports() {
   const stores = await db
@@ -49,6 +51,22 @@ async function syncShipmentStatuses() {
   await syncAllShipmentStatuses();
 }
 
+async function publishScheduledProducts() {
+  const now = new Date();
+  await db
+    .update(productsTable)
+    .set({ isActive: true })
+    .where(
+      and(
+        sql`${productsTable.publishAt} is not null`,
+        lte(productsTable.publishAt, now),
+        eq(productsTable.isActive, false),
+      ),
+    );
+}
+
+const { productsTable } = await import("../db").then((m) => m);
+
 export function startScheduler() {
   cron.schedule("0 21 * * *", () => {
     void sendDailyReports();
@@ -56,6 +74,14 @@ export function startScheduler() {
 
   cron.schedule("*/30 * * * *", () => {
     void syncShipmentStatuses();
+  });
+
+  cron.schedule("15 */2 * * *", () => {
+    void processAbandonedCartReminders();
+  });
+
+  cron.schedule("*/5 * * * *", () => {
+    void publishScheduledProducts();
   });
 
   logger.info("Scheduler started");

@@ -11,6 +11,8 @@ type AuthCtx = {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (data: { name?: string; email?: string }) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthCtx | null>(null);
@@ -56,8 +58,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function updateProfile(profileData: { name?: string; email?: string }) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not authenticated");
+    const res = await apiFetch("/auth/profile", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(profileData),
+    });
+    const apiData = res as { user: User };
+    setUser(apiData.user);
+  }
+
+  async function changePassword(currentPassword: string, newPassword: string) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not authenticated");
+    await apiFetch("/auth/password/change", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
   const value = useMemo(
-    () => ({ user, loading, isAuthenticated: Boolean(user), login, register, logout }),
+    () => ({ user, loading, isAuthenticated: Boolean(user), login, register, logout, updateProfile, changePassword }),
     [user, loading],
   );
 

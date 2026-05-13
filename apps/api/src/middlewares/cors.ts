@@ -73,7 +73,8 @@ export function corsOriginCallback(
     return;
   }
 
-  if (process.env.NODE_ENV !== "production" && isLocalDevHostname(hostname)) {
+  // Allow localhost in both dev and production for local testing
+  if (isLocalDevHostname(hostname)) {
     callback(null, true);
     return;
   }

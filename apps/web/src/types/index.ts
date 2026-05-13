@@ -2,7 +2,20 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  plan: string;
+  plan?: string;
+  storeId?: string | null;
+  isAdmin?: boolean;
+}
+
+export interface ProductVariant {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  sku?: string;
+  image?: string;
+  color?: string;
+  size?: string;
 }
 
 export interface Product {
@@ -11,11 +24,50 @@ export interface Product {
   slug: string;
   price: number;
   sale_price?: number;
-  stock: number;
+  cost_price?: number;
+  stock?: number;
+  low_stock_threshold?: number;
+  images?: string[];
+  variants?: ProductVariant[];
+  description?: string;
+  category?: string;
+  tags?: string[];
+  is_active?: boolean;
+  is_featured?: boolean;
+  is_draft?: boolean;
+  vendor?: string;
+  product_type?: string;
+  sku?: string;
+  barcode?: string;
+  track_inventory?: boolean;
+  sort_order?: number;
+  publish_at?: string;
+  meta_title?: string;
+  meta_desc?: string;
+  urdu_description?: string;
+  rating?: number;
+  review_count?: number;
+  delivery_days?: number;
+  ships_from?: string;
+  collection_ids?: string[];
+  collection_labels?: string[];
+  storeId?: string;
+}
+
+export interface ProductReview {
+  id: string;
+  customerName: string;
+  rating: number;
+  comment: string | null;
   images: string[];
-  category: string;
-  description: string;
-  is_active: boolean;
+  createdAt: string;
+  verified: boolean;
+}
+
+export interface RatingStats {
+  count: number;
+  average: number;
+  distribution: Record<number, number>;
 }
 
 export interface Order {
@@ -25,11 +77,20 @@ export interface Order {
   customer_city: string;
   customer_address: string;
   items: OrderItem[];
-  total: number;
+  subtotal: number;
   delivery_fee: number;
+  discount: number;
+  total: number;
   payment_method: string;
+  payment_status: string;
   order_status: string;
+  coupon_code?: string | null;
+  ref_code?: string | null;
+  tracking_number?: string | null;
+  courier?: string | null;
+  notes?: string | null;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface OrderItem {
@@ -41,11 +102,15 @@ export interface OrderItem {
 }
 
 export interface CartItem {
+  /** Stable key for line item (product + optional variant). */
+  lineKey: string;
   product_id: string;
   name: string;
   price: number;
   qty: number;
   image: string;
+  variantId?: string;
+  variantName?: string;
 }
 
 export interface Stats {

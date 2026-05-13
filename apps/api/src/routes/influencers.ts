@@ -119,4 +119,32 @@ router.delete("/influencers/:id", authenticate, async (req, res) => {
   }
 });
 
+// Influencer self-service portal - public access via ref code
+router.get("/influencer/:refCode", async (req, res) => {
+  try {
+    const { refCode } = req.params;
+    const [influencer] = await db
+      .select()
+      .from(influencersTable)
+      .where(eq(influencersTable.refCode, refCode.toUpperCase()))
+      .limit(1);
+
+    if (!influencer) return res.status(404).json({ error: "Influencer not found" });
+
+    return res.json({
+      influencer: {
+        name: influencer.name,
+        refCode: influencer.refCode,
+        commissionPercent: Number(influencer.commissionPercent),
+        totalClicks: influencer.totalClicks,
+        totalOrders: influencer.totalOrders,
+        totalCommission: Number(influencer.totalCommission),
+      },
+    });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to fetch influencer";
+    return res.status(500).json({ error: msg });
+  }
+});
+
 export default router;

@@ -21,7 +21,7 @@ router.post("/shipping/book", authenticate, async (req, res) => {
   try {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const parsed = bookShippingSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ")  });
     const { orderId, courier } = parsed.data;
 
     const [order] = await db
@@ -124,7 +124,7 @@ router.post("/shipping/sync", authenticate, async (req, res) => {
   try {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const parsed = syncShippingSchema.safeParse(req.body ?? {});
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ")  });
     const courierFilter = parsed.data.courier;
     const [store] = await db.select().from(storesTable).where(eq(storesTable.id, req.user.storeId)).limit(1);
     if (!store) return res.status(404).json({ error: "Store not found" });
@@ -201,7 +201,7 @@ router.put("/shipping/settings", authenticate, async (req, res) => {
   try {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const parsed = updateShippingSettingsSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ")  });
     const shipping = parsed.data.shipping ?? parsed.data;
     const [store] = await db.select().from(storesTable).where(eq(storesTable.id, req.user.storeId)).limit(1);
     if (!store) return res.status(404).json({ error: "Store not found" });

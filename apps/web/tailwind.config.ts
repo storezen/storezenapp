@@ -32,8 +32,8 @@ const config: Config = {
         easypaisa: "var(--color-easypaisa)",
       },
       fontFamily: {
-        heading: ["var(--font-poppins)", "sans-serif"],
-        body: ["var(--font-inter)", "sans-serif"],
+        heading: ["var(--font-family-heading)", "sans-serif"],
+        body: ["var(--font-family-base)", "sans-serif"],
         urdu: ["Noto Nastaliq Urdu", "serif"],
       },
       spacing: {
@@ -73,10 +73,25 @@ const config: Config = {
           "0%": { backgroundPosition: "-300px 0" },
           "100%": { backgroundPosition: "300px 0" },
         },
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        fadeOut: {
+          "0%": { opacity: "1" },
+          "100%": { opacity: "0" },
+        },
+        slideInRight: {
+          "0%": { transform: "translateX(100%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         pulseSoft: "pulseSoft 2s ease-in-out infinite",
         shimmer: "shimmer 1.5s linear infinite",
+        "fade-in": "fadeIn 0.2s ease-out",
+        "fade-out": "fadeOut 0.2s ease-in",
+        "slide-in-right": "slideInRight 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)",
       },
     },
   },

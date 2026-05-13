@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import app from "./app";
+import app, { httpServer } from "./app";
 import { db } from "./db/index";
 import { runMigrations } from "./db/migrate";
 import { seedDatabase } from "./db/seed";
@@ -45,12 +45,7 @@ async function main() {
     process.exit(1);
   }
 
-  app.listen(port, (err) => {
-    if (err) {
-      logger.error({ err }, "Error listening on port");
-      process.exit(1);
-    }
-
+  httpServer.listen(port, () => {
     logger.info({ port }, "Server listening");
     startScheduler();
   });

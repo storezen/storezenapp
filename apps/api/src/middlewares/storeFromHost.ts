@@ -5,7 +5,7 @@ import type { NextFunction, Request, Response } from "express";
  * and exposes `req.storeSlugFromHost`. When `store_slug` query is missing, sets it
  * so public product routes keep working without repeating the slug in the URL.
  *
- * Optional: set `STORE_PUBLIC_ROOT_DOMAIN` (e.g. `zorvik.pk`) so only hosts under
+ * Optional: set `STORE_PUBLIC_ROOT_DOMAIN` (e.g. `vendrix.pk`) so only hosts under
  * that apex are treated as tenant subdomains (avoids `*.vercel.app` false positives).
  */
 function extractStoreSlugFromHost(hostname: string, rootDomain: string | undefined): string | undefined {

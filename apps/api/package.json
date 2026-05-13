@@ -1,24 +1,26 @@
 {
-  "name": "@workspace/api-server",
-  "version": "0.0.0",
+  "name": "@vendrix/api",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
+    "dev:stable": "sh -c 'PORT_TO_KILL=${PORT:-8080}; PIDS=$(lsof -ti tcp:$PORT_TO_KILL 2>/dev/null); [ -z \"$PIDS\" ] || kill -9 $PIDS; export NODE_ENV=development; pnpm run build && pnpm run start'",
     "build": "node ./build.mjs",
-    "start": "node --enable-source-maps ./dist/index.mjs",
+    "start": "dotenv -e .env -- node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate --config ./drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config ./drizzle.config.ts",
     "db:migrate:run": "tsx ./src/db/migrate.ts",
     "db:seed": "tsx ./src/db/seed.ts",
+    "db:seed:bulk": "tsx ./src/db/seed-bulk-demo.ts",
     "seed:admin": "tsx ./src/scripts/seed-admin.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@storepk/whatsapp": "workspace:*",
-    "@storepk/shipping": "workspace:*",
     "@storepk/ai": "workspace:*",
+    "@storepk/shipping": "workspace:*",
+    "@storepk/whatsapp": "workspace:*",
     "@vercel/node": "^5.3.4",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
@@ -32,6 +34,8 @@
     "pg": "^8.20.0",
     "pino": "^9",
     "pino-http": "^10",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -43,6 +47,7 @@
     "@types/node": "catalog:",
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.18.0",
+    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.9",
     "esbuild": "^0.27.3",
     "esbuild-plugin-pino": "^2.3.3",

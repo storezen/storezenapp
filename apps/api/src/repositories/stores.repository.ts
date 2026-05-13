@@ -22,7 +22,7 @@ export async function updateStoreById(id: string, data: Partial<typeof storesTab
   return store ?? null;
 }
 
-export async function upsertStorePages(storeId: string, homeBlocks: unknown[]) {
+export async function upsertStorePages(storeId: string, homeBlocks: unknown) {
   const [existing] = await db.select().from(storePagesTable).where(eq(storePagesTable.storeId, storeId)).limit(1);
   if (existing) {
     const [row] = await db

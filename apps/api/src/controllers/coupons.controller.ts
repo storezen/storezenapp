@@ -26,7 +26,7 @@ export async function createCouponController(req: Request, res: Response) {
   try {
     const storeId = requireStoreId(req);
     const parsed = createCouponSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const coupon = await createStoreCoupon(storeId, parsed.data);
     return res.status(201).json(coupon);
   } catch (error) {
@@ -51,7 +51,7 @@ export async function updateCouponController(req: Request, res: Response) {
     const storeId = requireStoreId(req);
     const couponId = toSingleParam(req.params.id);
     const parsed = updateCouponSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const coupon = await updateStoreCoupon(storeId, couponId, parsed.data);
     return res.json(coupon);
   } catch (error) {
@@ -81,7 +81,7 @@ export async function deleteCouponController(req: Request, res: Response) {
 export async function validateCouponController(req: Request, res: Response) {
   try {
     const parsed = validateCouponQuerySchema.safeParse(req.query);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const { code, store_slug, total } = parsed.data;
 
     const payload = await validateCoupon({

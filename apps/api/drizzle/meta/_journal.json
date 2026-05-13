@@ -29,6 +29,55 @@
       "when": 1776780999000,
       "tag": "0003_platform_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776781999000,
+      "tag": "0004_growth_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776782999000,
+      "tag": "0005_store_collections_pixels_abandon",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776783999000,
+      "tag": "0006_collection_max_products",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776784999000,
+      "tag": "0007_products_collections_v2",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1776893555055,
+      "tag": "0008_analytics_campaigns",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1777000000000,
+      "tag": "0009_products_inventory_bundles",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1778694034496,
+      "tag": "0010_zippy_swordsman",
+      "breakpoints": true
     }
   ]
 }

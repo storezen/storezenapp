@@ -1,4 +1,5 @@
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { parseVariantsJson } from "../lib/variants";
 import { db, couponsTable, ordersTable, productsTable } from "../db";
 
 type OrderFilters = {
@@ -101,7 +102,7 @@ export async function findProductsByIds(storeId: string, ids: string[]) {
   return db
     .select()
     .from(productsTable)
-    .where(and(eq(productsTable.storeId, storeId), sql`${productsTable.id} = ANY(${ids})`));
+    .where(and(eq(productsTable.storeId, storeId), inArray(productsTable.id, ids)));
 }
 
 export async function reduceProductStock(productId: string, qty: number) {
@@ -109,6 +110,20 @@ export async function reduceProductStock(productId: string, qty: number) {
     .update(productsTable)
     .set({ stock: sql`greatest(${productsTable.stock} - ${qty}, 0)` })
     .where(eq(productsTable.id, productId));
+}
+
+export async function reduceProductOrVariantStock(productId: string, qty: number, variantId?: string | null) {
+  const [product] = await db.select().from(productsTable).where(eq(productsTable.id, productId)).limit(1);
+  if (!product) return;
+  const list = parseVariantsJson(product.variants);
+  if (variantId && list.length > 0) {
+    const next = list.map((v) =>
+      v.id === variantId ? { ...v, stock: Math.max(0, (v.stock ?? 0) - qty) } : v,
+    );
+    await db.update(productsTable).set({ variants: next }).where(eq(productsTable.id, productId));
+    return;
+  }
+  await reduceProductStock(productId, qty);
 }
 
 export async function findValidCoupon(storeId: string, code: string) {
@@ -125,5 +140,38 @@ export async function incrementCouponUsedCount(couponId: string) {
     .update(couponsTable)
     .set({ usedCount: sql`${couponsTable.usedCount} + 1` })
     .where(eq(couponsTable.id, couponId));
+}
+
+export type CustomerAggregate = {
+  customerPhone: string;
+  displayName: string;
+  lastCity: string;
+  orderCount: number;
+  lastOrderAt: string;
+  totalSpent: number;
+};
+
+export async function getCustomerAggregatesForStore(storeId: string): Promise<CustomerAggregate[]> {
+  const rows = await db
+    .select({
+      customerPhone: ordersTable.customerPhone,
+      displayName: sql<string>`max(${ordersTable.customerName})`.as("displayName"),
+      lastCity: sql<string>`max(${ordersTable.customerCity})`.as("lastCity"),
+      orderCount: sql<number>`count(*)::int`.as("orderCount"),
+      lastOrderAt: sql<string>`max(${ordersTable.createdAt})::text`.as("lastOrderAt"),
+      totalSpent: sql<string>`coalesce(sum(${ordersTable.total}::numeric),0)::text`.as("totalSpent"),
+    })
+    .from(ordersTable)
+    .where(eq(ordersTable.storeId, storeId))
+    .groupBy(ordersTable.customerPhone)
+    .orderBy(desc(sql`max(${ordersTable.createdAt})`));
+  return rows.map((r) => ({
+    customerPhone: r.customerPhone,
+    displayName: r.displayName,
+    lastCity: r.lastCity,
+    orderCount: r.orderCount,
+    lastOrderAt: r.lastOrderAt,
+    totalSpent: Number(r.totalSpent ?? 0),
+  }));
 }
 

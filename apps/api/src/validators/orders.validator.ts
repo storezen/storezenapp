@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const orderStatusValues = [
+  "new",
+  "confirmed",
+  "shipped",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
+  "returned",
+] as const;
+
 export const placeOrderSchema = z.object({
   storeId: z.string().uuid(),
   customerName: z.string().min(2).max(255),
@@ -11,6 +21,7 @@ export const placeOrderSchema = z.object({
       z.object({
         productId: z.string().uuid(),
         quantity: z.coerce.number().int().positive(),
+        variantId: z.string().min(1).optional(),
       }),
     )
     .min(1),
@@ -20,14 +31,14 @@ export const placeOrderSchema = z.object({
 });
 
 export const listOrdersQuerySchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(orderStatusValues).optional(),
   page: z.coerce.number().int().positive().optional(),
   pageSize: z.coerce.number().int().positive().max(500).optional(),
   search: z.string().optional(),
 });
 
 export const updateOrderStatusSchema = z.object({
-  status: z.string().min(1),
+  status: z.enum(orderStatusValues),
 });
 
 export const trackOrderQuerySchema = z
@@ -41,6 +52,6 @@ export const trackOrderQuerySchema = z
 
 export const bulkStatusSchema = z.object({
   ids: z.array(z.string().uuid()).min(1),
-  status: z.string().min(1),
+  status: z.enum(orderStatusValues),
 });
 

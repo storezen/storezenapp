@@ -8,17 +8,22 @@ import {
   getPublicProducts,
   getStoreProducts,
   importStoreProductsCsv,
+  validateStoreProductImport,
+  analyzeStoreProductImport,
   toggleStoreProduct,
   updateStoreProduct,
 } from "../services/products.service";
 import {
   createProductSchema,
   importProductsSchema,
+  productImportAnalyzeSchema,
+  productImportValidateSchema,
   publicProductBySlugQuerySchema,
   publicProductsQuerySchema,
   storeProductsQuerySchema,
   updateProductSchema,
 } from "../validators/products.validator";
+import type { ColumnMapping } from "../lib/csv-product-import";
 
 function toSingleParam(value: string | string[] | undefined) {
   if (!value) return "";
@@ -28,15 +33,18 @@ function toSingleParam(value: string | string[] | undefined) {
 export async function getPublicProductsController(req: Request, res: Response) {
   try {
     const parsed = publicProductsQuerySchema.safeParse(req.query);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-    const { store_slug, category, q, sort } = parsed.data;
-    const products = await getPublicProducts({
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
+    const { store_slug, category, q, sort, collection_id: collectionId, limit, cursor } = parsed.data;
+    const { products, nextCursor } = await getPublicProducts({
       storeSlug: store_slug,
       category,
       q,
       sort,
+      collectionId,
+      limit,
+      cursor,
     });
-    return res.json({ products });
+    return res.json({ products, nextCursor });
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to load public products";
     if (msg === "store_slug is required") return res.status(400).json({ error: msg });
@@ -47,7 +55,7 @@ export async function getPublicProductsController(req: Request, res: Response) {
 export async function getPublicProductBySlugController(req: Request, res: Response) {
   try {
     const parsed = publicProductBySlugQuerySchema.safeParse(req.query);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const slug = toSingleParam(req.params.slug);
     const product = await getPublicProductBySlug({
       storeSlug: parsed.data.store_slug,
@@ -66,13 +74,16 @@ export async function getStoreProductsController(req: Request, res: Response) {
   try {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const parsed = storeProductsQuerySchema.safeParse(req.query);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-    const { category, q, status } = parsed.data;
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
+    const { category, q, status, publishStatus, collectionId, stock } = parsed.data;
     const products = await getStoreProducts({
       storeId: req.user.storeId,
       category,
       q,
       status,
+      publishStatus,
+      collectionId,
+      stock: stock && stock !== "all" ? stock : undefined,
     });
     return res.json({ products });
   } catch (error) {
@@ -85,7 +96,7 @@ export async function createProductController(req: Request, res: Response) {
   try {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const parsed = createProductSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
 
     const product = await createStoreProduct(req.user.storeId, parsed.data);
     return res.status(201).json(product);
@@ -100,7 +111,7 @@ export async function updateProductController(req: Request, res: Response) {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const productId = toSingleParam(req.params.id);
     const parsed = updateProductSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const product = await updateStoreProduct(req.user.storeId, productId, parsed.data);
     return res.json(product);
   } catch (error) {
@@ -156,13 +167,50 @@ export async function importProductsController(req: Request, res: Response) {
   try {
     if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
     const parsed = importProductsSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-    const { csv, replaceExisting = false } = parsed.data;
-    const result = await importStoreProductsCsv(req.user.storeId, csv, replaceExisting);
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
+    const { csv, replaceExisting, skipDuplicates, isShopify, columnMap } = parsed.data;
+    const result = await importStoreProductsCsv(req.user.storeId, csv, {
+      replaceExisting: replaceExisting ?? false,
+      skipDuplicates: skipDuplicates !== false,
+      isShopify: isShopify ?? false,
+      columnMap: (columnMap ?? {}) as ColumnMapping,
+    });
     return res.json(result);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to import products";
     if (msg.includes("No valid products")) return res.status(400).json({ error: msg });
+    return res.status(500).json({ error: msg });
+  }
+}
+
+export async function productImportAnalyzeController(req: Request, res: Response) {
+  try {
+    if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
+    const parsed = productImportAnalyzeSchema.safeParse(req.body);
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
+    const result = analyzeStoreProductImport(req.user.storeId, parsed.data.csv);
+    return res.json(result);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to read file";
+    return res.status(500).json({ error: msg });
+  }
+}
+
+export async function productImportValidateController(req: Request, res: Response) {
+  try {
+    if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
+    const parsed = productImportValidateSchema.safeParse(req.body);
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
+    const { csv, isShopify, columnMap } = parsed.data;
+    const out = await validateStoreProductImport(
+      req.user.storeId,
+      csv,
+      isShopify,
+      (columnMap ?? {}) as ColumnMapping,
+    );
+    return res.json(out);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to validate import";
     return res.status(500).json({ error: msg });
   }
 }

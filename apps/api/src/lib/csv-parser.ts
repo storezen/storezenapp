@@ -1,6 +1,6 @@
 /**
  * CSV parser for bulk product import.
- * Supports Shopify export format and Zorvik simple format.
+ * Supports Shopify export format and Vendrix simple format.
  */
 
 export interface CsvProduct {
@@ -11,6 +11,9 @@ export interface CsvProduct {
   compareAtPrice?: number;
   stock: number;
   category: string;
+  vendor?: string;
+  productType?: string;
+  sku?: string;
   image: string;
   images: string[];
   tags: string[];
@@ -21,10 +24,43 @@ export interface CsvProduct {
   urduDescription?: string;
   tiktokCaption?: string;
   whatsappText?: string;
+  weight?: number;
+  requiresShipping?: boolean;
   variants?: unknown;
 }
 
-function parseRow(row: string): string[] {
+/** Strip leading UTF-8 BOM (Excel/Windows “CSV UTF-8” saves this). */
+export function stripUtf8Bom(s: string): string {
+  if (s.length > 0 && s.codePointAt(0) === 0xfeff) return s.slice(1);
+  return s;
+}
+
+export function normalizeCsvHeader(h: string): string {
+  return stripUtf8Bom(h.trim())
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+}
+
+/**
+ * True Shopify product exports use columns Handle + Title (normalized).
+ * We avoid `includes("handle")` so fields like `url_handle` or `product_handle`
+ * are not mistaken for a Shopify file.
+ */
+export function isShopifyCsvHeaders(headersNorm: string[]): boolean {
+  const s = new Set(headersNorm);
+  if (!s.has("handle") || !s.has("title")) return false;
+  return (
+    s.has("variant_price") ||
+    s.has("variant_sku") ||
+    s.has("body_html") ||
+    s.has("body_(html)") ||
+    s.has("vendor") ||
+    s.has("option1_name") ||
+    s.has("published")
+  );
+}
+
+export function parseRow(row: string): string[] {
   const result: string[] = [];
   let cur = '';
   let inQuote = false;
@@ -67,13 +103,13 @@ export function parseCsvProducts(csv: string): {
   products: CsvProduct[];
   errors: string[];
 } {
-  const lines = csv.split(/\r?\n/).filter(l => l.trim());
+  const lines = stripUtf8Bom(csv).split(/\r?\n/).filter((l) => l.trim());
   if (lines.length < 2) return { products: [], errors: ['CSV has no data rows'] };
 
-  const headers = parseRow(lines[0]).map(h => h.toLowerCase().replace(/\s+/g, '_'));
+  const headers = parseRow(lines[0]).map((h) => normalizeCsvHeader(h));
 
   // Detect format
-  const isShopify = headers.some(h => h.includes('handle') || h.includes('variant_price'));
+  const isShopify = isShopifyCsvHeaders(headers);
 
   const products: CsvProduct[] = [];
   const errors: string[] = [];
@@ -166,7 +202,7 @@ function parseShopifyGroup(headers: string[], rows: string[][], handle: string, 
             (col('status') || col('published')).toLowerCase() !== 'draft' &&
             (col('status') || 'active').toLowerCase() !== 'archived',
     metaTitle: col('seo_title') || col('meta_title') || undefined,
-    metaDescription: col('seo_description') || col('meta_description') || undefined,
+    metaDescription: col('meta_desc') || col('seo_description') || col('meta_description') || undefined,
     urduDescription: col('urdu_description') || undefined,
     tiktokCaption: col('tiktok_caption') || undefined,
     whatsappText: col('whatsapp_text') || undefined,
@@ -186,7 +222,21 @@ function parseSimpleRow(headers: string[], row: string[], rowIdx: number): CsvPr
   if (!priceStr) throw new Error('Missing price');
 
   const id = col('id') || col('handle') || normalizeId('', name, rowIdx);
-  const imgStr = col('image') || col('image_src') || col('image_url') || '';
+  const imgStr = col('image') || col('image_src') || col('image_url') || col('featured_image') || '';
+  const imagesStr = col('images') || col('additional_images') || '';
+
+  // Parse multiple images
+  const imagesList = imagesStr ? imagesStr.split(',').map((img: string) => img.trim()).filter(Boolean) : [];
+
+  // Combine main image with additional images
+  const allImages = imgStr ? [imgStr, ...imagesList] : imagesList;
+
+  // Parse status
+  const statusVal = col('status');
+  const active = statusVal === 'active' || statusVal === 'true' || statusVal === 'published' || col('active') !== 'false';
+
+  // Parse requires shipping
+  const requiresShipping = col('requires_shipping')?.toLowerCase() === 'true' || col('shipping')?.toLowerCase() === 'true';
 
   return {
     id,
@@ -197,16 +247,21 @@ function parseSimpleRow(headers: string[], row: string[], rowIdx: number): CsvPr
     compareAtPrice: col('compare_at_price') || col('compare_price')
       ? parseNum(col('compare_at_price') || col('compare_price')) || undefined
       : undefined,
-    stock: parseNum(col('stock') || col('inventory') || '0'),
+    stock: parseNum(col('stock') || col('inventory') || col('qty') || col('quantity') || '0'),
     category: col('category') || col('type') || 'General',
+    vendor: col('vendor') || col('brand') || undefined,
+    productType: col('product_type') || undefined,
+    sku: col('sku') || col('barcode') || undefined,
     image: imgStr,
-    images: imgStr ? [imgStr] : [],
-    tags: col('tags') ? col('tags').split(',').map(t => t.trim()).filter(Boolean) : [],
-    active: col('active') !== 'false' && col('status') !== 'draft',
+    images: allImages,
+    tags: col('tags') ? col('tags').split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+    active,
     metaTitle: col('meta_title') || col('seo_title') || undefined,
-    metaDescription: col('meta_description') || col('seo_description') || undefined,
+    metaDescription: col('meta_desc') || col('meta_description') || col('seo_description') || undefined,
     urduDescription: col('urdu_description') || undefined,
     tiktokCaption: col('tiktok_caption') || undefined,
     whatsappText: col('whatsapp_text') || undefined,
+    weight: col('weight') ? parseNum(col('weight')) : undefined,
+    requiresShipping,
   };
 }

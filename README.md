@@ -1,4 +1,4 @@
-# Zorvik monorepo
+# Vendrix monorepo
 
 Store platform codebase: `pnpm` workspace with apps, shared packages, and scripts.
 

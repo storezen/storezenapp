@@ -10,6 +10,7 @@ import {
   updateUserPlanByAdmin,
   updateStoreOwnerPlan,
 } from "../services/admin.service";
+import { listLowStockProducts, listOutOfStockProducts, listTopProductsByStock, listAllProductsAdmin } from "../repositories/products.repository";
 import {
   adminStoresQuerySchema,
   adminUsersQuerySchema,
@@ -35,7 +36,7 @@ export async function getAdminStatsController(_req: Request, res: Response) {
 export async function listStoresController(req: Request, res: Response) {
   try {
     const parsed = adminStoresQuerySchema.safeParse(req.query);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const query = parsed.data;
     const stores = await getStores({
       page: query.page ?? 1,
@@ -65,7 +66,7 @@ export async function updateStorePlanController(req: Request, res: Response) {
   try {
     const storeId = one(req.params.id);
     const parsed = updateStorePlanSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const { plan } = parsed.data;
     const user = await updateStoreOwnerPlan(storeId, plan);
     return res.json(user);
@@ -80,7 +81,7 @@ export async function updateStorePlanController(req: Request, res: Response) {
 export async function listUsersController(req: Request, res: Response) {
   try {
     const parsed = adminUsersQuerySchema.safeParse(req.query);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const query = parsed.data;
     const users = await getUsers({
       page: query.page ?? 1,
@@ -109,7 +110,7 @@ export async function updateUserPlanController(req: Request, res: Response) {
   try {
     const userId = one(req.params.id);
     const parsed = updateUserPlanSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const user = await updateUserPlanByAdmin(userId, parsed.data.plan);
     return res.json(user);
   } catch (error) {
@@ -132,11 +133,53 @@ export async function getPlatformSettingsController(_req: Request, res: Response
 export async function updatePlatformSettingsController(req: Request, res: Response) {
   try {
     const parsed = updatePlatformSettingsSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) { const issues = parsed.error.issues.map((i) => i.message).join(", "); return res.status(400).json({ error: issues }); }
     const settings = await updateAdminPlatformSettings(parsed.data);
     return res.json(settings);
   } catch {
     return res.status(500).json({ error: "Failed to update platform settings" });
+  }
+}
+
+export async function getLowStockController(req: Request, res: Response) {
+  try {
+    if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
+    const products = await listLowStockProducts(req.user.storeId);
+    return res.json({ products });
+  } catch {
+    return res.status(500).json({ error: "Failed to fetch low stock products" });
+  }
+}
+
+export async function getOutOfStockController(req: Request, res: Response) {
+  try {
+    if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
+    const products = await listOutOfStockProducts(req.user.storeId);
+    return res.json({ products });
+  } catch {
+    return res.status(500).json({ error: "Failed to fetch out of stock products" });
+  }
+}
+
+export async function getTopStockController(req: Request, res: Response) {
+  try {
+    if (!req.user?.storeId) return res.status(401).json({ error: "Unauthorized" });
+    const products = await listTopProductsByStock(req.user.storeId);
+    return res.json({ products });
+  } catch {
+    return res.status(500).json({ error: "Failed to fetch top stock products" });
+  }
+}
+
+export async function listAllProductsController(req: Request, res: Response) {
+  try {
+    const search = req.query.q as string | undefined;
+    const status = req.query.status as "active" | "draft" | "all" | undefined;
+    const limit = Number(req.query.limit) || 100;
+    const products = await listAllProductsAdmin({ limit, search, status });
+    return res.json({ products });
+  } catch {
+    return res.status(500).json({ error: "Failed to fetch products" });
   }
 }
 

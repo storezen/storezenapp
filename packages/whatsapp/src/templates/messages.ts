@@ -21,6 +21,12 @@ export const MESSAGES = {
     `New order alert! #${value(vars, "id")} from ${value(vars, "name")} (${value(vars, "phone")}). Total: Rs.${value(vars, "total")}.`,
   DAILY_REPORT: (vars: TemplateVars) =>
     `Daily report (${value(vars, "date")}): Orders ${value(vars, "orders")}, Delivered ${value(vars, "delivered")}, Revenue Rs.${value(vars, "revenue")}.`,
+  ABANDONED_CART: (vars: TemplateVars) =>
+    `Assalam o Alaikum ${value(vars, "name")}! Aap ne cart chhor di: ${value(vars, "summary")}. ${value(
+      vars,
+      "store_name",
+      "Store",
+    )} se order complete karna ho to yahi number par message karein — COD available.`,
 };
 
 export type MessageKey = keyof typeof MESSAGES;

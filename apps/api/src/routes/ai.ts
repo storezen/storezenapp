@@ -14,7 +14,7 @@ const generateDescriptionSchema = z.object({
 router.post("/ai/generate-description", authenticate, async (req, res) => {
   try {
     const parsed = generateDescriptionSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues.map((i) => i.message).join(", ")  });
 
     const content = await generateProductContent(
       parsed.data.name,

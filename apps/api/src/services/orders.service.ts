@@ -10,7 +10,9 @@ import {
 } from "@storepk/whatsapp";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { conversationStateTable, db } from "../db";
-import { influencersTable } from "../db/schema";
+import { influencersTable, orderStatusHistoryTable } from "../db/schema";
+import { parseVariantsJson, resolveStock, resolveUnitPrice } from "../lib/variants";
+import { trackEvent } from "./eventService.js";
 import {
   createOrder,
   findOrderById,
@@ -19,15 +21,17 @@ import {
   findValidCoupon,
   getOrderStats,
   incrementCouponUsedCount,
-  reduceProductStock,
+  reduceProductOrVariantStock,
   trackOrder as trackOrderRepo,
   updateOrderStatus,
 } from "../repositories/orders.repository";
 import { findStoreById } from "../repositories/stores.repository";
+import { markCartsRecoveredForOrder } from "./abandoned-cart.service";
 
 type OrderItemInput = {
   productId: string;
   quantity: number;
+  variantId?: string;
 };
 
 type PlaceOrderInput = {
@@ -41,6 +45,16 @@ type PlaceOrderInput = {
   couponCode?: string;
   notes?: string;
   refCode?: string;
+};
+
+const ORDER_TRANSITIONS: Record<string, string[]> = {
+  new: ["confirmed", "cancelled"],
+  confirmed: ["shipped", "cancelled"],
+  shipped: ["out_for_delivery", "delivered", "returned"],
+  out_for_delivery: ["delivered", "returned"],
+  delivered: [],
+  cancelled: [],
+  returned: [],
 };
 
 const MAJOR_CITIES = new Set(["faisalabad", "rawalpindi", "multan", "peshawar", "gujranwala", "sialkot", "hyderabad"]);
@@ -122,18 +136,23 @@ export async function placeOrder(data: PlaceOrderInput) {
   for (const item of data.items) {
     const product = productMap.get(item.productId);
     if (!product) throw new Error(`Product not found: ${item.productId}`);
-    if ((product.stock ?? 0) < item.quantity) throw new Error(`Insufficient stock for ${product.name}`);
+    const available = resolveStock(product, item.variantId);
+    if (available < item.quantity) throw new Error(`Insufficient stock for ${product.name}`);
   }
 
   const lineItems = data.items.map((item) => {
     const product = productMap.get(item.productId)!;
-    const price = Number(product.salePrice ?? product.price);
+    const { unit, name: variantName } = resolveUnitPrice(product, item.variantId);
+    const hasVariants = parseVariantsJson(product.variants).length > 0;
+    const lineName = hasVariants && variantName ? `${product.name} (${variantName})` : product.name;
     return {
       productId: product.id,
-      name: product.name,
+      name: lineName,
       quantity: item.quantity,
-      unitPrice: price,
-      lineTotal: price * item.quantity,
+      unitPrice: unit,
+      lineTotal: unit * item.quantity,
+      variantId: item.variantId,
+      variantName: variantName ?? undefined,
     };
   });
 
@@ -188,7 +207,13 @@ export async function placeOrder(data: PlaceOrderInput) {
   });
 
   for (const item of data.items) {
-    await reduceProductStock(item.productId, item.quantity);
+    await reduceProductOrVariantStock(item.productId, item.quantity, item.variantId);
+  }
+
+  try {
+    await markCartsRecoveredForOrder(data.storeId, data.customerPhone);
+  } catch {
+    // non-blocking
   }
 
   await db.insert(conversationStateTable).values({
@@ -214,6 +239,20 @@ export async function placeOrder(data: PlaceOrderInput) {
     // ignore WhatsApp errors in order creation flow
   }
 
+  // Track purchase event for live analytics (non-blocking)
+  try {
+    trackEvent({
+      storeId: order.storeId,
+      sessionId: order.customerPhone,
+      eventType: "purchase",
+      orderId: order.id,
+      amount: Number(order.total),
+      timestamp: Date.now(),
+    });
+  } catch {
+    // non-blocking: event tracking should not affect order creation
+  }
+
   return order;
 }
 
@@ -221,9 +260,20 @@ export async function updateStatus(id: string, status: string, storeId: string) 
   const order = await findOrderById(id);
   if (!order) throw new Error("NotFound");
   if (order.storeId !== storeId) throw new Error("Forbidden");
-  const prevStatus = order.orderStatus;
+  const fromStatus = order.orderStatus ?? "new";
+  const allowed = ORDER_TRANSITIONS[fromStatus] ?? [];
+  if (!allowed.includes(status) && fromStatus !== status) {
+    throw new Error("InvalidStatusTransition");
+  }
+  const prevStatus = fromStatus;
   const updated = await updateOrderStatus(id, status);
   if (!updated) throw new Error("NotFound");
+  await db.insert(orderStatusHistoryTable).values({
+    orderId: updated.id,
+    storeId: updated.storeId,
+    previousStatus: String(prevStatus),
+    nextStatus: status,
+  });
   try {
     await sendOrderWhatsapp(
       {
@@ -311,6 +361,12 @@ export async function processOrderConfirmationReply(phone: string, body: string)
 
   if (normalized === "1") {
     await updateOrderStatus(order.id, "confirmed");
+    await db.insert(orderStatusHistoryTable).values({
+      orderId: order.id,
+      storeId: order.storeId,
+      previousStatus: String(order.orderStatus ?? "new"),
+      nextStatus: "confirmed",
+    });
     try {
       await sendOrderConfirmed(orderPayload, storePayload);
     } catch {
@@ -321,6 +377,12 @@ export async function processOrderConfirmationReply(phone: string, body: string)
   }
   if (normalized === "2") {
     await updateOrderStatus(order.id, "cancelled");
+    await db.insert(orderStatusHistoryTable).values({
+      orderId: order.id,
+      storeId: order.storeId,
+      previousStatus: String(order.orderStatus ?? "new"),
+      nextStatus: "cancelled",
+    });
     try {
       await sendOrderCancelled(orderPayload, storePayload);
     } catch {
