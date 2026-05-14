@@ -10,12 +10,32 @@ builder = "RAILPACK"
 
 [deploy]
 healthcheckPath = "/health"
+restart = "on-failure"
 
 [environment]
-DATABASE_URL = "postgresql://postgres:wYkdoXskFDBkrNZvFLlNqTvSlSkPPyHG@postgres.railway.internal:5432/railway"
+# Database - PostgreSQL on Railway
+DATABASE_URL = "postgresql://postgres:owblQEuxMEkvigCdfdBpSXxYQQrePGra@postgres.railway.internal:5432/railway"
+
+# Authentication
 JWT_SECRET = "C7L3KQ2DJu1dGc7Iu7mUrsj8Klhpam3reLKy+8iJCHM="
+
+# Admin Credentials
 ADMIN_EMAIL = "admin@storepk.com"
 ADMIN_PASSWORD = "strongpassword"
+
+# Server
 NODE_ENV = "production"
 PORT = "3000"
+
+# CORS - Allow all origins for development
 FRONTEND_ORIGINS = "*"
+
+# WhatsApp (Ultramsg) - Optional
+ULTRAMSG_INSTANCE_ID = ""
+ULTRAMSG_TOKEN = ""
+
+# Shipping APIs - Optional
+POSTEX_API_KEY = ""
+
+# AI - Optional
+GEMINI_API_KEY = ""
