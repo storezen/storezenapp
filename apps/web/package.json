@@ -3,10 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm run dev:stable",
-    "dev:stable": "sh -c 'PORT=3001; PIDS=$(lsof -ti tcp:$PORT 2>/dev/null); [ -z \"$PIDS\" ] || kill -9 $PIDS; rm -rf .next-dev; NEXT_DISABLE_WEBPACK_CACHE=1 next dev -p 3001'",
-    "dev:fast": "NEXT_DISABLE_WEBPACK_CACHE=1 next dev -p 3001",
-    "build": "NODE_ENV=production next build",
+    "dev": "next dev -p 3001",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next .next-dev"

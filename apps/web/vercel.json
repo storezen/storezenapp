@@ -1,3 +1,7 @@
 {
+  "version": 2,
+  "buildCommand": "pnpm install && pnpm --filter @storepk/web build",
+  "outputDirectory": ".next",
+  "installCommand": "pnpm install",
   "framework": "nextjs"
 }
