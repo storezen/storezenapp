@@ -11,7 +11,7 @@ buildCommand = "pnpm install && pnpm run build"
 nodeVersion = "22"
 
 [deploy]
-startCommand = "node dist/index.mjs"
+startCommand = "node apps/api/dist/index.mjs"
 healthcheckPath = "/health"
 restart = "on-failure"
 
