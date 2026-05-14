@@ -1,8 +1,9 @@
 packages:
   - 'apps/*'
   - 'packages/*'
-  - 'packages/lib/*'
 
 onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
+  - '@vercel/nft'
+  - 'sharp'
