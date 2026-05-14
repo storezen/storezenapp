@@ -3,8 +3,9 @@
   nodeVersion = "22"
 
 [build]
-builder = "NIXPACKS"
+  builder = "nixpacks"
+  buildCommand = "cd apps/api && npm install && npm run build"
+  startCommand = "node apps/api/dist/index.mjs"
 
 [deploy]
-startCommand = "node dist/index.mjs"
-healthcheckPath = "/api/healthz"
+  healthcheckPath = "/api/healthz"
