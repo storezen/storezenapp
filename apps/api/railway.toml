@@ -1,10 +1,9 @@
-# Railway config for API
+# Railway config for API - Root Directory: apps/api
 [railway]
   runtime = "nodejs"
 
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm install && pnpm run build"
 
 [deploy]
 startCommand = "node ./dist/index.mjs"
