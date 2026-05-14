@@ -313,7 +313,7 @@ export type ProductImportOptions = {
   skipDuplicates?: boolean;
   /** Set from analyze step. When true, the raw CSV is passed through. */
   isShopify?: boolean;
-  /** Map our fields to the column names from your file (Vendrix simple files only). */
+  /** Map our fields to the column names from your file (Storezen simple files only). */
   columnMap?: ColumnMapping;
 };
 

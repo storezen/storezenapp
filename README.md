@@ -1,4 +1,4 @@
-# Vendrix monorepo
+# Storezen monorepo
 
 Store platform codebase: `pnpm` workspace with apps, shared packages, and scripts.
 

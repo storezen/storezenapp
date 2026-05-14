@@ -1,6 +1,6 @@
 /**
  * CSV parser for bulk product import.
- * Supports Shopify export format and Vendrix simple format.
+ * Supports Shopify export format and Storezen simple format.
  */
 
 export interface CsvProduct {

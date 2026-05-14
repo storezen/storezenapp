@@ -132,7 +132,7 @@ export function Navbar() {
             href="/"
             className="text-lg font-extrabold tracking-tight text-zinc-900 transition-opacity hover:opacity-80 md:text-xl"
           >
-            {STORE_NAME || "Vendrix"}
+            {STORE_NAME || "Storezen"}
             <span className="text-emerald-600">PK</span>
           </Link>
 
@@ -266,7 +266,7 @@ export function Navbar() {
             >
               <div className="flex h-14 items-center justify-between border-b border-zinc-100 px-4">
                 <Link href="/" onClick={() => setMobileOpen(false)} className="text-lg font-extrabold tracking-tight text-zinc-900">
-                  {STORE_NAME || "Vendrix"}
+                  {STORE_NAME || "Storezen"}
                   <span className="text-emerald-600">PK</span>
                 </Link>
                 <button

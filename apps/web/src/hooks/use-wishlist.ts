@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const STORAGE_KEY = "vendrix-storefront-wishlist-v1";
+const STORAGE_KEY = "storezen-storefront-wishlist-v1";
 
 function readIds(): Set<string> {
   if (typeof window === "undefined") return new Set();

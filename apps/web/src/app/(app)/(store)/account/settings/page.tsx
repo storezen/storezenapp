@@ -400,7 +400,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="text-sm font-medium text-zinc-700">Store URL</label>
                     <div className="flex mt-1">
-                      <span className="px-3 py-2 bg-zinc-100 border border-r-0 border-zinc-300 rounded-l-lg text-sm text-zinc-500">vendrix.pk/</span>
+                      <span className="px-3 py-2 bg-zinc-100 border border-r-0 border-zinc-300 rounded-l-lg text-sm text-zinc-500">storezen.pk/</span>
                       <Input value={storeSlug} onChange={(e) => setStoreSlug(e.target.value)} className="rounded-l-none" placeholder="my-store" />
                     </div>
                   </div>

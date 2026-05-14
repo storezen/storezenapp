@@ -43,7 +43,7 @@ export default function ContactPage() {
     {
       Icon: Mail,
       title: "Email",
-      sub: "support@vendrix.pk",
+      sub: "support@storezen.pk",
       detail: "We reply within 24 hours",
       color: "bg-blue-50 text-blue-600",
     },

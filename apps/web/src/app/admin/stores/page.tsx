@@ -156,7 +156,7 @@ export default function StoresPage() {
                       </div>
                       <div>
                         <p className="font-medium text-zinc-900">{store.name}</p>
-                        <p className="text-xs text-zinc-400">vendrix.pk/{store.slug}</p>
+                        <p className="text-xs text-zinc-400">storezen.pk/{store.slug}</p>
                       </div>
                     </div>
                   </td>

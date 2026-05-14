@@ -10,7 +10,7 @@ type Props = {
   storeName?: string;
 };
 
-export function SeoPreview({ title, description, url = "https://vendrix.pk/products/example-product", storeName = "Vendrix Store" }: Props) {
+export function SeoPreview({ title, description, url = "https://storezen.pk/products/example-product", storeName = "Storezen Store" }: Props) {
   const metaTitle = title || "(product title)";
   const metaDesc = description || "(product description will appear here)";
   const displayUrl = url;

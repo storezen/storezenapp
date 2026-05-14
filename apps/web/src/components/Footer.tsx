@@ -45,7 +45,7 @@ export function Footer() {
           {/* Brand column */}
           <div className="lg:col-span-2">
             <Link href="/" className="text-2xl font-extrabold tracking-tight text-zinc-900">
-              {STORE_NAME || "Vendrix"}
+              {STORE_NAME || "Storezen"}
               <span className="text-emerald-600">PK</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
@@ -171,7 +171,7 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="bg-white">
         <div className="shop-container flex flex-col items-center justify-between gap-3 py-4 text-xs text-zinc-400 sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} {STORE_NAME || "Vendrix PK"}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {STORE_NAME || "Storezen PK"}. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/privacy" className="transition-colors hover:text-zinc-700">Privacy</Link>
             <Link href="/terms" className="transition-colors hover:text-zinc-700">Terms</Link>

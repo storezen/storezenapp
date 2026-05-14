@@ -55,7 +55,7 @@ export default function LoginPage() {
               </div>
             </motion.div>
             <h1 className="text-2xl font-extrabold tracking-tight text-zinc-900">
-              {STORE_NAME || "Vendrix"}
+              {STORE_NAME || "Storezen"}
               <span className="text-emerald-600">PK</span>
             </h1>
             <h2 className="mt-3 text-xl font-bold text-zinc-900">Welcome back</h2>

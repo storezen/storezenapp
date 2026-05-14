@@ -7,7 +7,7 @@ import {
   type CsvProduct,
 } from "./csv-parser";
 
-/** Canonical Vendrix simple format header keys (order matters for buildMappedCsv). */
+/** Canonical Storezen simple format header keys (order matters for buildMappedCsv). */
 export const TEMPLATE_CSV_HEADERS = [
   "name",
   "slug",

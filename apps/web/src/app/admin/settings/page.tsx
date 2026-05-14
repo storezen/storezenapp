@@ -55,8 +55,8 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
 
   // Platform Settings
-  const [platformName, setPlatformName] = useState("Vendrix");
-  const [platformEmail, setPlatformEmail] = useState("admin@vendrix.pk");
+  const [platformName, setPlatformName] = useState("Storezen");
+  const [platformEmail, setPlatformEmail] = useState("admin@storezen.pk");
   const [platformPhone, setPlatformPhone] = useState("03001234567");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [allowNewStores, setAllowNewStores] = useState(true);

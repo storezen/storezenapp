@@ -1,15 +1,15 @@
-# Vendrix Platform — App Breakdown
+# Storezen Platform — App Breakdown
 
 ## Overview
 
-Vendrix is a full-stack multi-tenant e-commerce SaaS platform built for selling accessories (smartwatches, audio, cases, straps) in Pakistan. It supports COD, WhatsApp-first customer support, and a self-serve store dashboard for merchants.
+Storezen is a full-stack multi-tenant e-commerce SaaS platform built for selling accessories (smartwatches, audio, cases, straps) in Pakistan. It supports COD, WhatsApp-first customer support, and a self-serve store dashboard for merchants.
 
 ---
 
 ## Architecture
 
 ```
-vendrix.pk/
+storezen.pk/
 ├── apps/
 │   ├── api/          # Express.js backend (Port 3000)
 │   └── web/          # Next.js 14 frontend (Port 3001)
@@ -198,9 +198,9 @@ WHATSAPP_PHONE_NUMBER_ID
 
 | Environment | Platform | URL |
 |-------------|----------|-----|
-| API (production) | Railway | `vendrix.up.railway.app` |
-| Web (production) | Vercel | `vendrix.pk` |
-| Web (staging) | Vercel | `vendrix-staging.vercel.app` |
+| API (production) | Railway | `Storezen.up.railway.app` |
+| Web (production) | Vercel | `storezen.pk` |
+| Web (staging) | Vercel | `Storezen-staging.vercel.app` |
 | Local API | localhost:3000 | — |
 | Local Web | localhost:3001 | — |
 

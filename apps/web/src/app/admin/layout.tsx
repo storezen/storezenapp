@@ -89,7 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!sidebarCollapsed && (
             <div className="min-w-0">
               <p className="text-sm font-bold text-zinc-900 truncate">Admin</p>
-              <p className="text-[10px] text-zinc-400 truncate">Vendrix Platform</p>
+              <p className="text-[10px] text-zinc-400 truncate">Storezen Platform</p>
             </div>
           )}
         </div>

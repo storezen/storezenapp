@@ -435,7 +435,7 @@ export function PremiumHomePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">Why Vendrix?</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">Why Storezen?</h2>
               <p className="mt-2 text-sm text-zinc-500">We are obsessed with making your shopping experience amazing</p>
             </motion.div>
           </div>

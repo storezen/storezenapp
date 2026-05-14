@@ -1,5 +1,5 @@
 /**
- * Vendrix CMS Block Registry
+ * Storezen CMS Block Registry
  * Canonical source of truth for every block type:
  * - type string, label, icon
  * - JSON Schema for settings validation
