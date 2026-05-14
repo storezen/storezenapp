@@ -1,10 +1,12 @@
-# Railway config for API - Root Directory: apps/api
+# Railway config for API
 [railway]
   runtime = "nodejs"
 
 [build]
 builder = "RAILPACK"
+buildCommand = "pnpm install && pnpm run build"
 
 [deploy]
 startCommand = "pnpm start"
 healthcheckPath = "/api/healthz"
+restart = "on-failure"
