@@ -1,12 +1,12 @@
 # Storezen API - Railway Deployment
 # Root Directory: apps/api
 
-[build]
-builder = "RAILPACK"
-buildCommand = "cd ../.. && pnpm install && pnpm --filter @storepk/api build"
+[railway]
+runtime = "nodejs"
 nodeVersion = "22"
 
+[build]
+builder = "RAILPACK"
+
 [deploy]
-startCommand = "node ./apps/api/dist/index.mjs"
 healthcheckPath = "/health"
-restart = "on-failure"
