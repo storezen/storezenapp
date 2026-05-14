@@ -40,7 +40,6 @@ export {
 export {
   courierRegistry,
   initializeCourierAdapters,
-  getAvailableCouriers,
   type CourierAdapter,
   type ShipmentData,
   type TrackingInfo,
@@ -53,6 +52,7 @@ export {
   cancelShipment,
   getShipmentByOrder,
   updateShipmentFromWebhook,
+  getAvailableCouriers,
 } from "../shippingService";
 
 // WhatsApp automation
