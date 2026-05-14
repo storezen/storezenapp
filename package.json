@@ -9,7 +9,6 @@
     "type": "git",
     "url": "https://github.com/storezen/storezenapp.git"
   },
-  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "turbo run build",
