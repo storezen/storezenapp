@@ -3,9 +3,9 @@
   nodeVersion = "22"
 
 [build]
-  builder = "nixpacks"
-  buildCommand = "cd apps/api && pnpm install --no-frozen-lockfile && pnpm run build"
-  startCommand = "node apps/api/dist/index.mjs"
+  builder = "railpack"
+  nodeVersion = "22"
 
 [deploy]
+  startCommand = "node apps/api/dist/index.mjs"
   healthcheckPath = "/api/healthz"
