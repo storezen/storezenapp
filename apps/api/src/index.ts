@@ -27,13 +27,22 @@ async function isUsersTableEmpty(): Promise<boolean> {
 }
 
 async function start() {
-  await runMigrations();
+  try {
+    await runMigrations();
+    logger.info("Drizzle migrations completed");
+  } catch (err) {
+    logger.warn({ err }, "Drizzle migrations failed - continuing anyway");
+  }
 
-  if (await isUsersTableEmpty()) {
-    logger.info("Users table is empty — running database seed");
-    await seedDatabase();
-  } else {
-    logger.info("Users table is not empty — skipping seed");
+  try {
+    if (await isUsersTableEmpty()) {
+      logger.info("Users table is empty — running database seed");
+      await seedDatabase();
+    } else {
+      logger.info("Users table is not empty — skipping seed");
+    }
+  } catch (err) {
+    logger.warn({ err }, "Seed failed - continuing anyway");
   }
 }
 
