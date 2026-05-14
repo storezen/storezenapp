@@ -7,6 +7,7 @@
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
     "dev:stable": "sh -c 'PORT_TO_KILL=${PORT:-8080}; PIDS=$(lsof -ti tcp:$PORT_TO_KILL 2>/dev/null); [ -z \"$PIDS\" ] || kill -9 $PIDS; export NODE_ENV=development; pnpm run build && pnpm run start'",
     "build": "NODE_OPTIONS='--max-old-space-size=4096' node ./build.mjs",
+    "build:prod": "NODE_OPTIONS='--max-old-space-size=4096' node ./build.mjs",
     "start": "dotenv -e .env -- node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate --config ./drizzle.config.ts",
