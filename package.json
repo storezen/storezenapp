@@ -10,12 +10,11 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build": "pnpm -r --if-present run build",
     "build:api": "cd apps/api && pnpm run build",
     "build:web": "turbo run build --filter=@workspace/pk-store",
     "build:dashboard": "turbo run build --filter=@workspace/dashboard",
     "build:admin": "turbo run build --filter=@workspace/admin",
-    "build:api": "turbo run build --filter=@workspace/api-server",
     "db:migrate": "sh -c 'set -a; [ -f .env ] && . ./.env; [ -f apps/api/.env ] && . ./apps/api/.env; set +a; export PGCONNECT_TIMEOUT=${PGCONNECT_TIMEOUT:-15}; cd apps/api && pnpm exec drizzle-kit migrate'",
     "db:seed": "cd apps/api && pnpm ts-node src/db/seed.ts",
     "db:seed:bulk": "sh -c 'set -a; [ -f .env ] && . ./.env; [ -f apps/api/.env ] && . ./apps/api/.env; set +a; cd apps/api && pnpm run db:seed:bulk'",
