@@ -10,3 +10,12 @@ builder = "RAILPACK"
 
 [deploy]
 healthcheckPath = "/health"
+
+[environment]
+DATABASE_URL = "postgresql://postgres:wYkdoXskFDBkrNZvFLlNqTvSlSkPPyHG@postgres.railway.internal:5432/railway"
+JWT_SECRET = "C7L3KQ2DJu1dGc7Iu7mUrsj8Klhpam3reLKy+8iJCHM="
+ADMIN_EMAIL = "admin@storepk.com"
+ADMIN_PASSWORD = "strongpassword"
+NODE_ENV = "production"
+PORT = "3000"
+FRONTEND_ORIGINS = "*"
