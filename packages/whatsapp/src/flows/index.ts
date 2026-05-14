@@ -1,4 +1,4 @@
-import { getDb } from "@workspace/db";
+import { getDb } from "@storepk/db";
 import { sql } from "drizzle-orm";
 import { sendMessage } from "../providers/ultramsg";
 import { MESSAGES, type MessageKey } from "../templates/messages";

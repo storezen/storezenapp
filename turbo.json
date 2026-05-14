@@ -1,18 +1,20 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["apps/admin/**", "apps/dashboard/**", "apps/pk-store/**", ".env*"],
+  "globalDependencies": ["**/.env.*"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
-    },
-    "typecheck": {
-      "dependsOn": ["^typecheck"],
-      "outputs": []
+      "outputs": ["dist/**", ".next/**", "!**/.next/cache/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }
