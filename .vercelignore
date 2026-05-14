@@ -1,8 +1,0 @@
-apps/api
-packages
-.git
-node_modules
-*.md
-.env
-.env.*
-!.env.example

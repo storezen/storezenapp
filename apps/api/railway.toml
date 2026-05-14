@@ -1,11 +1,10 @@
-[railway]
-  runtime = "nodejs"
-  nodeVersion = "22"
+# Monorepo API — Railway **Root directory** = `apps/api`
+# Alternative to repo-root Docker deploy (`/railway.toml` + `Dockerfile.api`).
 
 [build]
-  builder = "railpack"
-  nodeVersion = "22"
+builder = "RAILPACK"
+buildCommand = "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install && pnpm --filter @storezen/api build"
 
 [deploy]
-  startCommand = "node apps/api/dist/index.mjs"
-  healthcheckPath = "/api/healthz"
+startCommand = "cd ../.. && pnpm --filter @storezen/api start"
+healthcheckPath = "/api/healthz"
