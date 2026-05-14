@@ -1,0 +1,6 @@
+turbo.json
+turbo.json.bak
+apps/api
+apps/docs
+packages
+scripts
