@@ -1,9 +1,11 @@
-# Monorepo API — Railway **Root directory** = `apps/api`
+# Railway config for API
+[railway]
+  runtime = "nodejs"
 
 [build]
 builder = "RAILPACK"
-buildCommand = "NODE_OPTIONS='--max-old-space-size=4096' node ./build.mjs"
+buildCommand = "pnpm install && pnpm run build"
 
 [deploy]
-startCommand = "node ./dist/index.mjs"
+startCommand = "pnpm start"
 healthcheckPath = "/api/healthz"
