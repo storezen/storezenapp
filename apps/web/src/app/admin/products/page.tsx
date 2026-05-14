@@ -34,9 +34,7 @@ export default function AdminProductsPage() {
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      console.log("Loading admin products...");
       const data = await authFetch("/admin/products?limit=500") as { products?: Product[] };
-      console.log("Products loaded:", data.products?.length);
       setProducts(data.products ?? []);
       const allTags = Array.from(new Set((data.products ?? []).flatMap((p) => p.tags ?? [])));
       setTagSuggestions(allTags);

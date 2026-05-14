@@ -343,7 +343,8 @@
       "Bash(NEXT_PUBLIC_API_URL=http://localhost:4000/api npx next dev -p 3001)",
       "Bash(mkdir -p \"/Users/mrmacbook/Desktop/zorvik.pk/apps/web/src/app/\\(app\\)/\\(store\\)/category/[slug]\")",
       "Bash(PORT=3001 pnpm run dev:stable)",
-      "Bash(PORT=3001 pnpm run dev:fast)"
+      "Bash(PORT=3001 pnpm run dev:fast)",
+      "Bash(GIT_SSH_COMMAND=\"ssh -v\" git push origin main)"
     ],
     "additionalDirectories": [
       "/Users/mrmacbook/Desktop/zorvik.pk/apps/web/src/app/(app)/(store)/account/products",

@@ -116,7 +116,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get('/', (req, res) => res.redirect('http://localhost:3001'));
+app.get('/', (req, res) => {
+  const frontendUrl = process.env.FRONTEND_ORIGINS?.split(',')[0]?.trim() || 'http://localhost:3001';
+  res.redirect(frontendUrl);
+});
 
 app.use("/api", router);
 
