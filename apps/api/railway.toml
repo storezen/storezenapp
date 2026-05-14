@@ -1,6 +1,11 @@
+[railway]
+  runtime = "nodejs"
+  nodeVersion = "22"
+
 [build]
 builder = "RAILPACK"
+buildCommand = "pnpm install && pnpm run build"
 
 [deploy]
-startCommand = "node ./dist/index.mjs"
+startCommand = "pnpm run start"
 healthcheckPath = "/api/healthz"
