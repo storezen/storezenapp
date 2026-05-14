@@ -6,5 +6,5 @@
 builder = "RAILPACK"
 
 [deploy]
-startCommand = "node ./dist/index.mjs"
+startCommand = "pnpm start"
 healthcheckPath = "/api/healthz"
