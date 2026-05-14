@@ -54,7 +54,6 @@ export {
   cancelShipment,
   getShipmentByOrder,
   updateShipmentFromWebhook,
-  getAvailableCouriers,
 } from "./shippingService";
 
 // WhatsApp automation

@@ -11,6 +11,7 @@
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build:api": "cd apps/api && pnpm run build",
     "build:web": "turbo run build --filter=@workspace/pk-store",
     "build:dashboard": "turbo run build --filter=@workspace/dashboard",
     "build:admin": "turbo run build --filter=@workspace/admin",
