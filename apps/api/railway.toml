@@ -4,8 +4,8 @@
 
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm install && pnpm run build:skip-typecheck"
+buildCommand = "pnpm install && pnpm run build"
 
 [deploy]
-startCommand = "pnpm start"
+startCommand = "node ./dist/index.mjs"
 healthcheckPath = "/api/healthz"
