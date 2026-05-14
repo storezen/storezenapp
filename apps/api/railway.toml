@@ -4,7 +4,7 @@
 
 [build]
   builder = "nixpacks"
-  buildCommand = "cd apps/api && npm install && npm run build"
+  buildCommand = "cd apps/api && pnpm install --no-frozen-lockfile && pnpm run build"
   startCommand = "node apps/api/dist/index.mjs"
 
 [deploy]
