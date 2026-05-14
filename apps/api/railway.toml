@@ -4,7 +4,8 @@
 
 [build]
 builder = "NIXPACKS"
+buildCommand = "cd apps/api && pnpm install && pnpm run build"
 
 [deploy]
-startCommand = "node dist/index.mjs"
+startCommand = "cd apps/api && node dist/index.mjs"
 healthcheckPath = "/api/healthz"
