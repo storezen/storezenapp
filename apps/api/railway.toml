@@ -1,12 +1,6 @@
-# Railway config for API
-# Root Directory in Railway UI should be: apps/api
-
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm install --frozen-lockfile && pnpm run build"
 
 [deploy]
 startCommand = "node ./dist/index.mjs"
 healthcheckPath = "/api/healthz"
-restart = "on-failure"
-restartDelaySecs = 5
