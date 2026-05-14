@@ -1,10 +1,9 @@
 # Monorepo API — Railway **Root directory** = `apps/api`
-# Alternative to repo-root Docker deploy (`/railway.toml` + `Dockerfile.api`).
 
 [build]
 builder = "RAILPACK"
-buildCommand = "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install && pnpm --filter @workspace/api-server build"
+buildCommand = "NODE_OPTIONS='--max-old-space-size=4096' node ./build.mjs"
 
 [deploy]
-startCommand = "cd ../.. && pnpm --filter @workspace/api-server start"
+startCommand = "node ./dist/index.mjs"
 healthcheckPath = "/api/healthz"
