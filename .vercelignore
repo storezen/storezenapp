@@ -4,3 +4,7 @@ apps/api
 apps/docs
 packages
 scripts
+node_modules
+.turbo
+.next-dev
+.next
