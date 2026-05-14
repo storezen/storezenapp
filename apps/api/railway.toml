@@ -3,9 +3,8 @@
   nodeVersion = "22"
 
 [build]
-builder = "RAILPACK"
-buildCommand = "pnpm install && pnpm run build"
+builder = "NIXPACKS"
 
 [deploy]
-startCommand = "pnpm run start"
+startCommand = "node dist/index.mjs"
 healthcheckPath = "/api/healthz"
