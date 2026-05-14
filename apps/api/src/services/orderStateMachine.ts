@@ -98,16 +98,18 @@ export class OrderStateMachine {
 
     const from = this.currentState;
     const event = getEventForTransition(from, to);
+    if (!event) throw new Error("Invalid transition event");
     this.currentState = to;
 
-    return { event, from, to };
+    return { event: event as OrderEvent, from, to };
   }
 
   /**
    * Check if order is in a terminal state
    */
   isTerminal(): boolean {
-    return [ORDER_STATES.DELIVERED, ORDER_STATES.CANCELLED, ORDER_STATES.RETURNED].includes(this.currentState);
+    const state = this.currentState;
+    return state === ORDER_STATES.DELIVERED || state === ORDER_STATES.CANCELLED || state === ORDER_STATES.RETURNED;
   }
 
   /**

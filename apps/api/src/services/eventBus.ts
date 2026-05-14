@@ -21,7 +21,7 @@ export type EventType =
   | "order_cancelled"
   | "order_returned";
 
-export interface OrderEvent {
+export interface EventRecord {
   id: string;
   orderId: string;
   storeId: string;
@@ -173,20 +173,20 @@ class EventBus {
   /**
    * Get event history for an order
    */
-  async getOrderEvents(orderId: string): Promise<OrderEvent[]> {
+  async getOrderEvents(orderId: string): Promise<EventRecord[]> {
     const events = await db
       .select()
       .from(orderEventsTable)
       .where(eq(orderEventsTable.orderId, orderId))
       .orderBy(orderEventsTable.createdAt);
 
-    return events as OrderEvent[];
+    return events as EventRecord[];
   }
 
   /**
    * Get recent events for a store
    */
-  async getStoreEvents(storeId: string, limit = 50): Promise<OrderEvent[]> {
+  async getStoreEvents(storeId: string, limit = 50): Promise<EventRecord[]> {
     const events = await db
       .select()
       .from(orderEventsTable)
@@ -194,7 +194,7 @@ class EventBus {
       .orderBy(orderEventsTable.createdAt)
       .limit(limit);
 
-    return (events as OrderEvent[]).reverse();
+    return (events as EventRecord[]).reverse();
   }
 }
 
