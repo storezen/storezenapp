@@ -3,9 +3,10 @@
   "buildCommand": "npm install && npm run build:web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "npm install",
+  "rootDirectory": "apps/web",
   "framework": "nextjs",
   "functions": {
-    "apps/web/src/app/**/*.ts": {
+    "src/app/**/*.ts": {
       "maxDuration": 60
     }
   },
