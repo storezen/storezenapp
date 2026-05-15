@@ -61,3 +61,14 @@ async function main() {
 }
 
 main();
+
+// Global error handlers for production safety
+process.on("uncaughtException", (err) => {
+  logger.fatal({ err }, "Uncaught exception - exiting");
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  logger.fatal({ reason }, "Unhandled rejection - exiting");
+  process.exit(1);
+});

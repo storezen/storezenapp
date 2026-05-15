@@ -6,5 +6,10 @@ startCommand = "node apps/api/dist/index.mjs"
 [node]
 version = "20"
 
+[healthcheck]
+path = "/healthz"
+port = 8080
+startupTimeout = 60
+
 [Etcd]
 URL = "${DATABASE_URL}"
