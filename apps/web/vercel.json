@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd ../.. && npm install && npm run build:web",
+  "buildCommand": "corepack enable && pnpm install --frozen-lockfile && pnpm run build:web",
   "outputDirectory": ".next",
-  "installCommand": "cd ../.. && npm install",
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
   "framework": "nextjs",
   "functions": {
     "src/app/**/*.ts": {
