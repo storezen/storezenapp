@@ -36,10 +36,5 @@
   ],
   "engines": {
     "node": ">=20"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/node": "^20.17.0"
-    }
   }
 }

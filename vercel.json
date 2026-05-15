@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install --filter=@storepk/web --frozen-lockfile && pnpm --filter=@storepk/web run build",
+  "buildCommand": "cd apps/web && pnpm install --no-frozen-lockfile && pnpm run build",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "pnpm install --filter=@storepk/web",
+  "installCommand": "cd apps/web && pnpm install --no-frozen-lockfile",
   "framework": "nextjs"
 }

@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pnpm install --frozen-lockfile && pnpm run build:api"
+buildCommand = "pnpm install --no-frozen-lockfile && pnpm run build:api"
 startCommand = "node apps/api/dist/index.mjs"
 
 [node]
