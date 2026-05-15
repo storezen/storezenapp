@@ -344,7 +344,10 @@
       "Bash(mkdir -p \"/Users/mrmacbook/Desktop/zorvik.pk/apps/web/src/app/\\(app\\)/\\(store\\)/category/[slug]\")",
       "Bash(PORT=3001 pnpm run dev:stable)",
       "Bash(PORT=3001 pnpm run dev:fast)",
-      "Bash(GIT_SSH_COMMAND=\"ssh -v\" git push origin main)"
+      "Bash(GIT_SSH_COMMAND=\"ssh -v\" git push origin main)",
+      "Bash(corepack enable *)",
+      "Bash(ls -la /Users/mrmacbook/.claude/plugins/ 2>/dev/null || echo \"No plugins directory\")",
+      "Read(//Users/mrmacbook/.claude/plugins/**)"
     ],
     "additionalDirectories": [
       "/Users/mrmacbook/Desktop/zorvik.pk/apps/web/src/app/(app)/(store)/account/products",
@@ -354,5 +357,8 @@
       "/private/tmp",
       "/Users/mrmacbook/Desktop/zorvik.pk/apps/web/src/app/(app)/(store)/category"
     ]
+  },
+  "enabledPlugins": {
+    "ecc@ecc": true
   }
 }
