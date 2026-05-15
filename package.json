@@ -9,9 +9,8 @@
     "type": "git",
     "url": "https://github.com/storezen/storezenapp.git"
   },
-  "packageManager": "pnpm@9.15.9",
   "scripts": {
-    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock'",
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock pnpm-lock.yaml'",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
