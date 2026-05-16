@@ -1,5 +1,6 @@
 services:
   - name: storezen-api
+    type: web
     region: oregon
     buildCommand: pnpm install --frozen-lockfile && pnpm run build:api
     startCommand: node apps/api/dist/index.mjs
@@ -7,9 +8,10 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: "10000"
 
   - name: storezen-web
+    type: web
     region: oregon
     buildCommand: pnpm install --frozen-lockfile && pnpm run build:web
     startCommand: pnpm --filter @storepk/web start
@@ -17,7 +19,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 8080
+        value: "8080"
 
 databases:
   - name: storezen-db
