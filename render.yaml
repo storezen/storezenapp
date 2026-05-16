@@ -18,6 +18,10 @@ services:
         generateValue: true
       - key: FRONTEND_ORIGINS
         value: https://storezen.onrender.com
+      - key: REDIS_URL
+        fromService:
+          name: storezen-cache
+          property: connectionString
     scaling:
       minInstances: 1
       maxInstances: 1
@@ -39,3 +43,8 @@ databases:
     plan: free
     region: oregon
     postgresVersion: 16
+
+redis:
+  - name: storezen-cache
+    plan: free
+    region: oregon
