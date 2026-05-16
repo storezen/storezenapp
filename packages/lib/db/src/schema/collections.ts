@@ -3,15 +3,19 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const collectionsTable = pgTable("collections", {
-  id:          serial("id").primaryKey(),
-  name:        text("name").notNull(),
-  slug:        text("slug").notNull().unique(),
+  // Multi-tenant
+  storeId:   text("store_id").notNull(),
+  
+  id:        serial("id").primaryKey(),
+  name:      text("name").notNull(),
+  slug:      text("slug").notNull(),
   description: text("description"),
-  image:       text("image"),
-  sortOrder:   integer("sort_order").notNull().default(0),
-  active:      boolean("active").notNull().default(true),
-  createdAt:   timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt:   timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  image:     text("image"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active:    boolean("active").notNull().default(true),
+  
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 export const insertCollectionSchema = createInsertSchema(collectionsTable).omit({
