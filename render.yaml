@@ -1,8 +1,10 @@
+preBuildCommand: pnpm install --frozen-lockfile
+
 services:
   - name: storezen-api
     type: web
     region: oregon
-    buildCommand: pnpm install --frozen-lockfile && pnpm -r --filter=@storepk/api build
+    buildCommand: pnpm --filter @storepk/api run build
     startCommand: node apps/api/dist/index.mjs
     envVars:
       - key: NODE_ENV
@@ -13,7 +15,7 @@ services:
   - name: storezen-web
     type: web
     region: oregon
-    buildCommand: pnpm install --frozen-lockfile && pnpm -r --filter=@storepk/web build
+    buildCommand: pnpm --filter @storepk/web run build
     startCommand: pnpm --filter @storepk/web start
     envVars:
       - key: NODE_ENV
