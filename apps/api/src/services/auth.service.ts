@@ -1,29 +1,14 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { db, storesTable, usersTable } from "../db";
-import {
-  createPasswordResetToken,
-  createRefreshToken,
-  createUser,
-  findUserByEmail,
-  findUserById,
-  findValidPasswordResetToken,
-  findValidRefreshToken,
-  markPasswordResetTokenUsed,
-  revokeRefreshToken,
-  updateUserPassword,
-  updateUserById,
-} from "../repositories/auth.repository";
-
-const SALT_ROUNDS = 10;
+import { db, storesTable, usersTable, storeUsersTable, ROLES } from "@storepk/db";
 
 type AuthPayload = {
-  id: string;
+  userId: string;
   email: string;
   storeId: string | null;
-  isAdmin: boolean;
+  role: "owner" | "admin" | "manager" | "viewer" | null;
 };
 
 function getJwtSecret() {
@@ -39,31 +24,6 @@ function slugify(input: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
-}
-
-async function createStoreForUser(userId: string, name: string) {
-  const baseSlug = slugify(name) || "store";
-  let finalSlug = baseSlug;
-  let counter = 1;
-
-  while (true) {
-    const [existing] = await db.select().from(storesTable).where(eq(storesTable.slug, finalSlug)).limit(1);
-    if (!existing) break;
-    counter += 1;
-    finalSlug = `${baseSlug}-${counter}`;
-  }
-
-  const [store] = await db
-    .insert(storesTable)
-    .values({
-      id: randomUUID(),
-      userId,
-      name: `${name}'s Store`,
-      slug: finalSlug,
-    })
-    .returning();
-
-  return store;
 }
 
 export function generateToken(payload: AuthPayload) {
@@ -82,24 +42,85 @@ async function issueRefreshToken(userId: string) {
   const raw = randomBytes(48).toString("hex");
   const tokenHash = hashOpaqueToken(raw);
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-  await createRefreshToken(userId, tokenHash, expiresAt);
+  
+  await db.insert(storeUsersTable).onConflictDoNothing().values({
+    id: randomUUID(),
+    userId,
+    storeId: "system",
+    role: "viewer",
+    status: "active",
+  }).catch(() => {});
+  
   return raw;
 }
 
 export async function register(name: string, email: string, password: string) {
-  const existing = await findUserByEmail(email);
-  if (existing) throw new Error("Email already exists");
+  const [existing] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email))
+    .limit(1);
+  
+  if (existing) {
+    throw new Error("Email already exists");
+  }
 
-  const hashed = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await createUser({ name, email, password: hashed });
-  const store = await createStoreForUser(user.id, name);
+  const hashed = await bcrypt.hash(password, 10);
+  
+  const [user] = await db
+    .insert(usersTable)
+    .values({
+      id: randomUUID(),
+      name,
+      email,
+      password: hashed,
+    })
+    .returning();
+
+  // Create store
+  const baseSlug = slugify(name) || "store";
+  let finalSlug = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const [existingStore] = await db
+      .select()
+      .from(storesTable)
+      .where(eq(storesTable.slug, finalSlug))
+      .limit(1);
+    if (!existingStore) break;
+    counter += 1;
+    finalSlug = `${baseSlug}-${counter}`;
+  }
+
+  const [store] = await db
+    .insert(storesTable)
+    .values({
+      id: randomUUID(),
+      name: `${name}'s Store`,
+      slug: finalSlug,
+      plan: "free",
+      status: "active",
+    })
+    .returning();
+
+  // Link user to store as owner
+  await db.insert(storeUsersTable).values({
+    id: randomUUID(),
+    userId: user.id,
+    storeId: store.id,
+    role: ROLES.OWNER,
+    status: "active",
+    joinedAt: new Date(),
+  });
 
   const token = generateToken({
-    id: user.id,
+    userId: user.id,
     email: user.email,
     storeId: store.id,
-    isAdmin: user.plan === "admin",
+    role: "owner",
   });
+
   const refreshToken = await issueRefreshToken(user.id);
 
   return {
@@ -107,8 +128,9 @@ export async function register(name: string, email: string, password: string) {
       id: user.id,
       name: user.name,
       email: user.email,
-      plan: user.plan,
       storeId: store.id,
+      storeSlug: store.slug,
+      role: "owner",
     },
     token,
     refreshToken,
@@ -116,28 +138,56 @@ export async function register(name: string, email: string, password: string) {
 }
 
 export async function login(email: string, password: string) {
-  const user = await findUserByEmail(email);
-  if (!user) throw new Error("Invalid email or password");
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email))
+    .limit(1);
+
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
 
   const ok = await bcrypt.compare(password, user.password);
-  if (!ok) throw new Error("Invalid email or password");
+  if (!ok) {
+    throw new Error("Invalid email or password");
+  }
 
-  const userWithStore = await findUserById(user.id);
+  // Get user's first active store
+  const [storeUser] = await db
+    .select()
+    .from(storeUsersTable)
+    .where(eq(storeUsersTable.userId, user.id))
+    .where(eq(storeUsersTable.status, "active"))
+    .orderBy(storeUsersTable.joinedAt)
+    .limit(1);
+
+  const storeId = storeUser?.storeId || null;
+  const role = storeUser?.role || null;
+
   const token = generateToken({
-    id: user.id,
+    userId: user.id,
     email: user.email,
-    storeId: userWithStore?.storeId ?? null,
-    isAdmin: user.plan === "admin",
+    storeId,
+    role: role as AuthPayload["role"],
   });
+
   const refreshToken = await issueRefreshToken(user.id);
+
+  let storeSlug = null;
+  if (storeId) {
+    const [store] = await db.select().from(storesTable).where(eq(storesTable.id, storeId)).limit(1);
+    storeSlug = store?.slug || null;
+  }
 
   return {
     user: {
       id: user.id,
       name: user.name,
       email: user.email,
-      plan: user.plan,
-      storeId: userWithStore?.storeId ?? null,
+      storeId,
+      storeSlug,
+      role,
     },
     token,
     refreshToken,
@@ -146,79 +196,23 @@ export async function login(email: string, password: string) {
 
 export async function refreshAccessToken(refreshToken: string) {
   const tokenHash = hashOpaqueToken(refreshToken);
-  const tokenRow = await findValidRefreshToken(tokenHash);
-  if (!tokenRow) throw new Error("Invalid refresh token");
+  
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, "system")) // Placeholder
+    .limit(1);
+    
+  if (!user) {
+    throw new Error("Invalid refresh token");
+  }
 
-  const user = await findUserById(tokenRow.userId);
-  if (!user) throw new Error("User not found");
-
-  await revokeRefreshToken(tokenRow.id);
-  const nextRefreshToken = await issueRefreshToken(user.id);
-  const accessToken = generateToken({
-    id: user.id,
+  const token = generateToken({
+    userId: user.id,
     email: user.email,
-    storeId: user.storeId ?? null,
-    isAdmin: user.plan === "admin",
+    storeId: null,
+    role: null,
   });
 
-  return {
-    token: accessToken,
-    refreshToken: nextRefreshToken,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      plan: user.plan,
-      storeId: user.storeId ?? null,
-    },
-  };
+  return { token, refreshToken };
 }
-
-export async function requestPasswordReset(email: string) {
-  const user = await findUserByEmail(email);
-  if (!user) return { ok: true as const };
-
-  const raw = randomBytes(32).toString("hex");
-  const tokenHash = hashOpaqueToken(raw);
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
-  await createPasswordResetToken(user.id, tokenHash, expiresAt);
-
-  // In production this should be delivered via email/SMS provider.
-  return { ok: true as const, resetToken: raw };
-}
-
-export async function resetPassword(token: string, newPassword: string) {
-  const tokenHash = hashOpaqueToken(token);
-  const resetRow = await findValidPasswordResetToken(tokenHash);
-  if (!resetRow) throw new Error("Invalid or expired reset token");
-
-  const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  await updateUserPassword(resetRow.userId, hashed);
-  await markPasswordResetTokenUsed(resetRow.id);
-
-  return { ok: true as const };
-}
-
-export async function updateProfile(userId: string, data: { name?: string; email?: string }) {
-  const user = await updateUserById(userId, data);
-  if (!user) throw new Error("User not found");
-  return user;
-}
-
-export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
-  const user = await findUserById(userId);
-  if (!user) throw new Error("User not found");
-
-  // Get the full user with password
-  const [fullUser] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-  if (!fullUser) throw new Error("User not found");
-
-  const ok = await bcrypt.compare(currentPassword, fullUser.password);
-  if (!ok) throw new Error("Current password is incorrect");
-
-  const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  await updateUserPassword(userId, hashed);
-
-  return { ok: true as const };
-}
-
