@@ -2,7 +2,7 @@ services:
   - name: storezen-api
     type: web
     region: oregon
-    buildCommand: pnpm install --frozen-lockfile && pnpm run build:api
+    buildCommand: pnpm install --frozen-lockfile && pnpm -r --filter=@storepk/api build
     startCommand: node apps/api/dist/index.mjs
     envVars:
       - key: NODE_ENV
@@ -13,13 +13,13 @@ services:
   - name: storezen-web
     type: web
     region: oregon
-    buildCommand: pnpm install --frozen-lockfile && pnpm run build:web
+    buildCommand: pnpm install --frozen-lockfile && pnpm -r --filter=@storepk/web build
     startCommand: pnpm --filter @storepk/web start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: "8080"
+      - key: NEXT_PUBLIC_API_URL
+        value: "https://storezen-api.onrender.com"
 
 databases:
   - name: storezen-db
