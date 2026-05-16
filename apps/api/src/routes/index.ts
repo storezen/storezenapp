@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { storeFromHostMiddleware } from "../middlewares/storeFromHost";
+import { apiLimiter, authLimiter } from "../middlewares/rateLimit.js";
 import healthRouter from "./health.js";
 import bundlesRouter from "./bundles.routes.js";
 import storeBundlesRouter from "./store-bundles.routes.js";
@@ -31,6 +32,7 @@ import { placeOrderController } from "../controllers/orders.controller";
 const router: IRouter = Router();
 
 router.use(storeFromHostMiddleware);
+router.use(apiLimiter);
 
 // Public routes - no authentication required
 router.get("/stores/:slug", getStoreBySlugController);
@@ -38,7 +40,7 @@ router.get("/products/public", getPublicProductsController);
 router.post("/orders", placeOrderController);
 
 router.use(healthRouter);
-router.use(authRouter);
+router.use("/auth", authLimiter, authRouter);
 router.use(storeCollectionsRouter);
 router.use(bundlesRouter);
 router.use(storeBundlesRouter);
