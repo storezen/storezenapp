@@ -1,4 +1,4 @@
-preBuildCommand: pnpm install --frozen-lockfile
+preBuildCommand: pnpm install --no-frozen-lockfile
 
 services:
   - name: storezen-api
