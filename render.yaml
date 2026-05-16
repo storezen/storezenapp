@@ -2,7 +2,7 @@ services:
   - name: storezen-api
     type: web
     region: oregon
-    buildCommand: pnpm install && pnpm turbo run build --filter=@storepk/api
+    buildCommand: pnpm install && pnpm --filter @storepk/api run build
     startCommand: node apps/api/dist/index.mjs
     envVars:
       - key: NODE_ENV
