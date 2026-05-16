@@ -1,8 +1,6 @@
 services:
-  # API Backend
   - type: web
     name: storezen-api
-    env: node
     region: oregon
     buildCommand: pnpm install --frozen-lockfile && pnpm run build:api
     startCommand: node apps/api/dist/index.mjs
@@ -11,21 +9,17 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: JWT_SECRET
-        generateValue: true
-      - key: FRONTEND_ORIGINS
-        value: https://storezen.onrender.com
 
-  # Web Frontend
   - type: web
     name: storezen-web
-    env: static
     region: oregon
     buildCommand: pnpm install --frozen-lockfile && pnpm run build:web
-    outputDir: apps/web/.next
+    startCommand: node apps/web/.next/standalone/apps/web/server.js
     envVars:
-      - key: NEXT_PUBLIC_STORE_SLUG
-        value: demo
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
 
 databases:
   - name: storezen-db
