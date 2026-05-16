@@ -10,17 +10,6 @@ services:
       - key: PORT
         value: "10000"
 
-  - name: storezen-web
-    type: web
-    region: oregon
-    buildCommand: pnpm install && pnpm turbo run build --filter=@storepk/web
-    startCommand: pnpm --filter @storepk/web start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_API_URL
-        value: "https://storezen-api.onrender.com"
-
 databases:
   - name: storezen-db
     plan: free
