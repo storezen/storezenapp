@@ -631,3 +631,29 @@ export const cmsMediaTable = pgTable(
 );
 
 
+
+// Store Users - RBAC (Multi-tenant user access)
+export const storeUsersTable = pgTable("store_users", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  storeId: uuid("store_id")
+    .notNull()
+    .references(() => storesTable.id, { onDelete: "cascade" }),
+  role: varchar("role", { length: 20 }).notNull().default("viewer"), // owner, admin, manager, viewer
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, invited, suspended
+  permissions: jsonb("permissions").default(sql`'[]'::jsonb`),
+  invitationToken: varchar("invitation_token", { length: 255 }),
+  invitedAt: timestamp("invited_at", { withTimezone: true }),
+  joinedAt: timestamp("joined_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+// Role permissions mapping
+export const ROLE_PERMISSIONS = {
+  owner: ["store:read", "store:update", "store:delete", "users:read", "users:invite", "users:manage", "users:remove", "products:read", "products:create", "products:update", "products:delete", "orders:read", "orders:update", "orders:delete", "collections:read", "collections:create", "collections:update", "collections:delete", "billing:read", "billing:manage", "settings:read", "settings:update", "ai:use"],
+  admin: ["store:read", "store:update", "users:read", "users:invite", "users:manage", "products:read", "products:create", "products:update", "products:delete", "orders:read", "orders:update", "collections:read", "collections:create", "collections:update", "collections:delete", "billing:read", "settings:read", "settings:update", "ai:use"],
+  manager: ["products:read", "products:create", "products:update", "products:delete", "orders:read", "orders:update", "collections:read", "collections:create", "collections:update", "ai:use"],
+  viewer: ["products:read", "orders:read", "collections:read"],
+} as const;

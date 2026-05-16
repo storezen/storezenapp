@@ -3,6 +3,7 @@ services:
     type: web
     region: oregon
     buildCommand: pnpm install && pnpm --filter @storepk/api run build
+    postDeployCommand: cd apps/api && pnpm run db:push
     startCommand: node apps/api/dist/index.mjs
     envVars:
       - key: NODE_ENV
