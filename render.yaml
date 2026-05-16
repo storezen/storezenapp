@@ -1,4 +1,7 @@
 services:
+  # ===========================
+  # API Backend (Express.js)
+  # ===========================
   - name: storezen-api
     type: web
     region: oregon
@@ -10,7 +13,32 @@ services:
         value: production
       - key: PORT
         value: "10000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: storezen-db
+          property: internalDatabaseUrl
 
+  # ===========================
+  # Web Frontend (Next.js)
+  # ===========================
+  - name: storezen-web
+    type: web
+    region: oregon
+    buildCommand: pnpm install && pnpm --filter @storepk/web run build
+    startCommand: pnpm --filter @storepk/web start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: NEXT_PUBLIC_API_URL
+        value: https://storezen-api.onrender.com
+      - key: NEXT_PUBLIC_STORE_URL
+        value: https://storezen-web.onrender.com
+
+  # ===========================
+  # Database
+  # ===========================
 databases:
   - name: storezen-db
     plan: free
