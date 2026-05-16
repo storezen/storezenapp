@@ -25,4 +25,3 @@ databases:
   - name: storezen-db
     plan: free
     region: oregon
-    postgresVersion: 16
