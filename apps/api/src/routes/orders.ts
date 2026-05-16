@@ -1,30 +1,31 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/authenticate";
+import { requirePermission } from "../middlewares/rbac";
 import {
-  bulkStatusController,
-  exportOrdersController,
-  getCustomersAggregateController,
-  getCustomersExportController,
-  getOrderByIdController,
-  getOrderEventsController,
   getOrdersController,
-  placeOrderController,
-  trackOrderController,
-  updateOrderStatusController,
+  getOrderController,
+  updateOrderController,
+  deleteOrderController,
+  createOrderController,
 } from "../controllers/orders.controller";
 
 const router = Router();
 
-router.post("/orders", placeOrderController);
-router.get("/orders/track", trackOrderController);
-router.get("/orders/export", authenticate, exportOrdersController);
-router.get("/orders", authenticate, getOrdersController);
-router.get("/orders/customers/aggregate", authenticate, getCustomersAggregateController);
-router.get("/orders/customers/export", authenticate, getCustomersExportController);
-router.get("/orders/:id", authenticate, getOrderByIdController);
-router.get("/orders/:id/events", authenticate, getOrderEventsController);
-router.put("/orders/:id/status", authenticate, updateOrderStatusController);
-router.post("/orders/bulk-status", authenticate, bulkStatusController);
+// All routes require tenant + auth (handled by parent router)
+
+// List orders (viewer+)
+router.get("/", authenticate, requirePermission("orders:read"), getOrdersController);
+
+// Get single order (viewer+)
+router.get("/:id", authenticate, requirePermission("orders:read"), getOrderController);
+
+// Create order (manager+)
+router.post("/", authenticate, requirePermission("orders:create"), createOrderController);
+
+// Update order (manager+)
+router.put("/:id", authenticate, requirePermission("orders:update"), updateOrderController);
+
+// Delete order (admin+)
+router.delete("/:id", authenticate, requirePermission("orders:delete"), deleteOrderController);
 
 export default router;
-

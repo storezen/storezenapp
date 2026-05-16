@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/authenticate";
+import { requirePermission } from "../middlewares/rbac";
 import {
   createProductController,
   deleteProductController,
@@ -17,17 +18,31 @@ import {
 
 const router = Router();
 
-// Note: /products/public and /products/public/:slug are handled in routes/index.ts to avoid auth conflicts
-// Unauthenticated product endpoints go through index.ts first
-router.get("/products", authenticate, getStoreProductsController);
-router.post("/products", authenticate, createProductController);
-router.put("/products/:id", authenticate, updateProductController);
-router.delete("/products/:id", authenticate, deleteProductController);
-router.put("/products/:id/toggle", authenticate, toggleProductController);
-router.get("/products/export", authenticate, exportProductsController);
-router.get("/products/template", authenticate, productsTemplateController);
-router.post("/products/import/analyze", authenticate, productImportAnalyzeController);
-router.post("/products/import/validate", authenticate, productImportValidateController);
-router.post("/products/import", authenticate, importProductsController);
+// All routes now have tenant + auth via parent router
+// RBAC permissions applied:
+
+// Read products (viewer, manager, admin, owner)
+router.get("/", authenticate, requirePermission("products:read"), getStoreProductsController);
+
+// Create products (manager, admin, owner)
+router.post("/", authenticate, requirePermission("products:create"), createProductController);
+
+// Update products (manager, admin, owner)
+router.put("/:id", authenticate, requirePermission("products:update"), updateProductController);
+
+// Delete products (admin, owner only)
+router.delete("/:id", authenticate, requirePermission("products:delete"), deleteProductController);
+
+// Toggle active (manager, admin, owner)
+router.put("/:id/toggle", authenticate, requirePermission("products:update"), toggleProductController);
+
+// Export (manager, admin, owner)
+router.get("/export", authenticate, requirePermission("products:read"), exportProductsController);
+router.get("/template", authenticate, requirePermission("products:read"), productsTemplateController);
+
+// Import (manager, admin, owner)
+router.post("/import/analyze", authenticate, requirePermission("products:create"), productImportAnalyzeController);
+router.post("/import/validate", authenticate, requirePermission("products:create"), productImportValidateController);
+router.post("/import", authenticate, requirePermission("products:create"), importProductsController);
 
 export default router;
